@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Home, Plus, Music, Podcast, FileAudio } from "lucide-react";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
 import AudioStoryUpload from "@/components/AudioStoryUpload";
-// Removed Sheet, SheetContent, SheetTrigger imports
+import { Button } from "@/components/ui/button";
 
 const FILTERS = [
   { id: "all", label: "All", icon: Home },
@@ -45,14 +45,16 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Add Button -- NOW ROUTES TO /stories */}
-        <button
+        {/* Add Button -- routes to /stories using Link for reliability */}
+        <Button
+          asChild
           aria-label="Add"
           className="icon-btn ml-2"
-          onClick={() => navigate("/stories")}
         >
-          <Plus size={24} className="text-primary" />
-        </button>
+          <Link to="/stories">
+            <Plus size={24} className="text-primary" />
+          </Link>
+        </Button>
       </div>
 
       {/* Filters as smooth tabs */}
