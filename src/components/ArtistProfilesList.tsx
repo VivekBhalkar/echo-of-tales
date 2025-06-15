@@ -18,14 +18,18 @@ function getInitials(name: string | null) {
   return parts[0][0].toUpperCase() + parts[parts.length - 1][0].toUpperCase();
 }
 
-export default function ArtistProfilesList() {
+interface ArtistProfilesListProps {
+  selectedArtistId: string | null;
+  onSelectArtist: (artistId: string | null) => void;
+}
+
+export default function ArtistProfilesList({ selectedArtistId, onSelectArtist }: ArtistProfilesListProps) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchArtists() {
       setLoading(true);
-      // Get unique uploaded_by user ids
       const { data: stories, error: storyErr } = await supabase
         .from("audio_stories")
         .select("uploaded_by")
@@ -37,7 +41,6 @@ export default function ArtistProfilesList() {
         return;
       }
 
-      // Get unique user ids
       const userIds: string[] = Array.from(new Set(stories.map(x => x.uploaded_by)));
 
       if (userIds.length === 0) {
@@ -46,7 +49,6 @@ export default function ArtistProfilesList() {
         return;
       }
 
-      // Fetch profiles for those user ids
       const { data: artistProfiles, error: profileErr } = await supabase
         .from("profiles")
         .select("id, name, avatar_url")
@@ -55,7 +57,6 @@ export default function ArtistProfilesList() {
       if (profileErr || !artistProfiles) {
         setProfiles([]);
       } else {
-        // Sort alphabetically by name if any, else by id
         setProfiles(
           [...artistProfiles].sort((a, b) =>
             (a.name || a.id).localeCompare(b.name || b.id)
@@ -85,28 +86,48 @@ export default function ArtistProfilesList() {
   }
 
   return (
-    <div className="flex flex-wrap gap-5 py-3 justify-center">
+    <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+      {/* Show an "All" option to clear selection */}
+      <button
+        onClick={() => onSelectArtist(null)}
+        className={`flex flex-col items-center w-20 px-1 py-2 rounded-xl cursor-pointer border-2 transition
+          ${selectedArtistId === null ? 'border-primary bg-primary/10 shadow-md' : 'border-transparent hover:bg-muted/70'}
+        `}
+        aria-label="Show all artists"
+      >
+        <Avatar className="h-10 w-10 ring-2 ring-primary flex items-center justify-center">
+          <AvatarFallback className="bg-muted text-lg flex items-center justify-center">
+            <UserIcon size={18} />
+          </AvatarFallback>
+        </Avatar>
+        <span className="mt-1 text-xs font-semibold truncate text-center">All</span>
+      </button>
       {profiles.map((profile) => (
-        <div key={profile.id} className="flex flex-col items-center w-24">
-          <div className="mb-1">
-            <Avatar className="h-12 w-12 ring-2 ring-primary">
-              {profile.avatar_url ? (
-                <AvatarImage src={profile.avatar_url} alt={profile.name || "Artist"} />
-              ) : (
-                <AvatarFallback className="text-lg bg-muted">
-                  {getInitials(profile.name)}
-                </AvatarFallback>
-              )}
-            </Avatar>
-          </div>
-          <div className="w-full text-xs text-center truncate">
+        <button
+          key={profile.id}
+          onClick={() => onSelectArtist(profile.id)}
+          className={`flex flex-col items-center w-20 px-1 py-2 rounded-xl cursor-pointer border-2 transition
+            ${selectedArtistId === profile.id ? 'border-primary bg-primary/10 shadow-md' : 'border-transparent hover:bg-muted/70'}
+          `}
+          aria-label={profile.name || 'Artist profile'}
+        >
+          <Avatar className="h-10 w-10 ring-2 ring-primary">
+            {profile.avatar_url ? (
+              <AvatarImage src={profile.avatar_url} alt={profile.name || "Artist"} />
+            ) : (
+              <AvatarFallback className="text-lg bg-muted">
+                {getInitials(profile.name)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div className="mt-1 w-full text-xs text-center truncate">
             {profile.name || (
               <span className="opacity-60 italic flex items-center justify-center gap-1">
                 <UserIcon size={12} /> Unknown
               </span>
             )}
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );
