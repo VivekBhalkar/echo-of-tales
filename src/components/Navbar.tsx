@@ -36,17 +36,20 @@ export default function Navbar() {
             <Home size={22} className="text-primary" />
           </Link>
         </Button>
-        {/* Logo Image - replaces text */}
+        {/* Logo Image with Reflection */}
         <Link to="/stories" className="flex items-center select-none" style={{ minHeight: 40 }}>
-          <img
-            src="/lovable-uploads/1d104bc9-dd41-40e5-9f02-6d09d043d69e.png"
-            alt="AudioStory Logo"
-            className="h-10 w-auto max-w-[40px] rounded-xl shadow-lg bg-black"
-            style={{
-              objectFit: "contain",
-              boxShadow: "0 0 16px #00ff99a0",
-            }}
-          />
+          <div className="logo-reflection relative flex flex-col items-center">
+            <img
+              src="/lovable-uploads/1d104bc9-dd41-40e5-9f02-6d09d043d69e.png"
+              alt="AudioStory Logo"
+              className="h-10 w-auto max-w-[40px] rounded-xl shadow-lg bg-black"
+              style={{
+                objectFit: "contain",
+                boxShadow: "0 0 16px #00ff99a0",
+              }}
+            />
+            {/* Reflection is handled via CSS pseudo-element */}
+          </div>
         </Link>
       </div>
       <div className="flex gap-4 items-center">
