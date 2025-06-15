@@ -15,10 +15,29 @@ export default function AuthPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Store user state, respond to auth state changes.
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate("/stories");
+    let ignore = false;
+
+    // Listen for auth state changes reliably
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (ignore) return;
+      if (session?.user) {
+        navigate("/stories");
+      }
     });
+
+    // On initial mount, check session as backup
+    supabase.auth.getUser().then(({ data }) => {
+      if (!ignore && data.user) {
+        navigate("/stories");
+      }
+    });
+
+    return () => {
+      ignore = true;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
