@@ -4,7 +4,6 @@ import { Home, Plus, Music, Podcast, FileAudio } from "lucide-react";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
 import AudioStoryUpload from "@/components/AudioStoryUpload";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
 
 const FILTERS = [
   { id: "all", label: "All", icon: Home },
@@ -18,67 +17,71 @@ export default function HomePage() {
   const [active, setActive] = useState("all");
   const [search, setSearch] = useState("");
 
-  // Placeholder for search/filter logic in AudioStoryFeed if needed
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start w-full bg-background pb-10">
-      {/* Top glass nav bar */}
-      <div className="w-full flex items-center justify-between sticky top-0 z-40 py-4 px-4 md:px-8 glass-card backdrop-blur-lg border border-glass-border shadow-md bg-glass-bg/70">
+    <div className="min-h-screen flex flex-col items-center justify-start w-full bg-background pb-10 relative">
+      {/* Top Nav Bar */}
+      <div className="w-full flex items-center justify-between sticky top-0 z-40 py-5 px-2 md:px-8 glass-card backdrop-blur-lg border border-glass-border shadow-lg bg-glass-bg/90">
         {/* Home Icon */}
         <button
           className="icon-btn"
           aria-label="Home"
           onClick={() => window.location.href='/'}
         >
-          <Home size={22} className="text-primary" />
+          <Home size={24} className="text-primary" />
         </button>
-        {/* Search Bar */}
-        <div className="flex-1 flex justify-center">
+
+        {/* Centered search bar */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex flex-1 justify-center w-full">
           <input
             type="text"
-            className="glass-input outline-none w-full max-w-[340px] mx-2 shadow"
+            className="glass-input outline-none w-full max-w-[340px] mx-2 shadow text-base"
             placeholder="Search stories, music, podcasts..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            style={{
+              background: "rgba(48,54,76,0.96)",
+            }}
           />
         </div>
+
         {/* Add Button */}
         <Sheet open={uploadOpen} onOpenChange={setUploadOpen}>
           <SheetTrigger asChild>
             <button aria-label="Add" className="icon-btn ml-2">
-              <Plus size={22} className="text-primary" />
+              <Plus size={24} className="text-primary" />
             </button>
           </SheetTrigger>
           <SheetContent side="right" className="glass-sheet">
-            <h2 className="mb-4 text-xl font-bold" style={{color: "var(--primary)"}}>Upload a Story</h2>
+            <h2 className="mb-4 text-xl font-bold text-primary">Upload a Story</h2>
             <AudioStoryUpload onUpload={() => setUploadOpen(false)} />
           </SheetContent>
         </Sheet>
       </div>
-      {/* Filters as tabs */}
-      <div className="flex items-center justify-center gap-2 mt-8 mb-7 w-full max-w-lg">
+
+      {/* Filters as smooth tabs */}
+      <div className="flex items-center justify-center gap-3 mt-11 mb-9 w-full max-w-lg">
         {FILTERS.map(filter => (
           <button
             key={filter.id}
-            className={`tab-btn${active === filter.id ? " active" : ""}`}
+            className={`tab-btn drop-shadow-sm backdrop-blur transition-all duration-150 ${active === filter.id ? "active scale-105" : ""}`}
             onClick={() => setActive(filter.id)}
+            style={active === filter.id ? {
+              background: "rgba(37,41,57,0.90)",
+              borderColor: "var(--primary)",
+              color: "var(--primary)",
+              boxShadow: "0 0 16px 0 var(--primary), 0 1.5px 7px 0 rgba(90,120,255,0.08)"
+            } : undefined}
           >
             <filter.icon size={18} className="inline mr-1" />
             {filter.label}
           </button>
         ))}
       </div>
+
       {/* Stories section */}
       <div className="w-full flex justify-center">
-        <div className="w-full max-w-2xl glass-card p-8">
-          {/* "All" tab shows recent stories; others can be implemented later */}
-          {active === "all" ? (
-            <AudioStoryFeed />
-          ) : (
-            <div className="text-center text-muted-foreground py-16">
-              {active.charAt(0).toUpperCase() + active.slice(1)} section coming soon.
-            </div>
-          )}
+        <div className="w-full max-w-2xl glass-card p-8 animate-fade-in">
+          <AudioStoryFeed category={active} search={search} />
         </div>
       </div>
     </div>

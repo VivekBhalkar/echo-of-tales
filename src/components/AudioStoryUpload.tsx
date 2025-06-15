@@ -9,8 +9,15 @@ interface Props {
   onUpload?: () => void;
 }
 
+const CATEGORIES = [
+  { id: "music", label: "Music" },
+  { id: "podcast", label: "Podcast" },
+  { id: "stories", label: "Stories" },
+];
+
 export default function AudioStoryUpload({ onUpload }: Props) {
   const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("music");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -48,6 +55,7 @@ export default function AudioStoryUpload({ onUpload }: Props) {
     const { error: dbErr } = await supabase.from("audio_stories").insert([
       {
         title,
+        category,
         audio_url: `https://pxnwcbxhqwsuoqmvcsph.supabase.co/storage/v1/object/public/story-audio/${filePath}`,
         uploaded_by: user.id
       }
@@ -58,14 +66,15 @@ export default function AudioStoryUpload({ onUpload }: Props) {
       toast({title:"Story uploaded!"});
       setTitle("");
       setFile(null);
+      setCategory("music");
       if (onUpload) onUpload();
     }
     setUploading(false);
   };
 
   return (
-    <form onSubmit={handleUpload} className="flex flex-col gap-4 bg-card shadow-md rounded-xl p-6 w-full max-w-md mx-auto mb-6">
-      <h2 className="text-xl font-bold">Upload a story</h2>
+    <form onSubmit={handleUpload} className="flex flex-col gap-5 bg-card shadow-xl rounded-2xl p-7 w-full max-w-md mx-auto mb-2 animate-fade-in">
+      <h2 className="text-xl font-bold text-primary mb-2">Upload Audio</h2>
       <Input 
         placeholder="Story title"
         type="text"
@@ -73,13 +82,33 @@ export default function AudioStoryUpload({ onUpload }: Props) {
         onChange={e => setTitle(e.target.value)}
         disabled={uploading}
       />
+      <div className="flex justify-between items-center gap-3">
+        <label className="font-semibold text-sm">Select category:</label>
+        <div className="flex gap-2">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              disabled={uploading}
+              type="button"
+              className={`px-4 py-1 rounded-full font-semibold text-xs transition 
+                ${category === cat.id
+                  ? "bg-primary text-white shadow" 
+                  : "bg-muted text-muted-foreground hover:bg-background/60"}`
+              }
+              onClick={() => setCategory(cat.id)}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
       <Input 
         type="file"
         accept="audio/*"
         onChange={handleFileChange}
         disabled={uploading}
       />
-      <Button type="submit" disabled={uploading}>
+      <Button type="submit" disabled={uploading} className="btn-primary rounded-xl font-neon uppercase tracking-widest h-11 mt-2">
         {uploading ? "Uploading..." : "Upload"}
       </Button>
     </form>

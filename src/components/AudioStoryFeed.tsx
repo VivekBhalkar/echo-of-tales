@@ -9,41 +9,80 @@ type AudioStory = {
   audio_url: string;
   uploaded_by: string;
   created_at: string;
+  category?: string; // optional for backward compatibility
 };
 
-export default function AudioStoryFeed() {
+interface AudioStoryFeedProps {
+  category?: string; // "music" | "podcast" | "stories" | "all"
+  search?: string;
+}
+
+export default function AudioStoryFeed({ category = "all", search = "" }: AudioStoryFeedProps) {
   const [stories, setStories] = useState<AudioStory[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from("audio_stories")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(20);
-      if (!error && data) setStories(data as AudioStory[]);
+        .limit(30);
+
+      if (category && category !== "all") {
+        query = query.eq("category", category);
+      }
+
+      const { data, error } = await query;
+      let filtered: AudioStory[] = [];
+      if (!error && data) {
+        filtered = (data as AudioStory[]);
+        if (search) {
+          filtered = filtered.filter(story =>
+            story.title.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+      }
+      setStories(filtered);
       setLoading(false);
     })();
-  }, []);
+  }, [category, search]);
+
+  let sectionLabel: string;
+  switch (category) {
+    case "music":
+      sectionLabel = "Music";
+      break;
+    case "podcast":
+      sectionLabel = "Podcasts";
+      break;
+    case "stories":
+      sectionLabel = "Stories";
+      break;
+    default:
+      sectionLabel = "All";
+  }
 
   return (
     <div className="flex flex-col items-center w-full">
-      <h2 className="text-2xl font-bold mb-4 w-full text-left max-w-2xl">Recent Stories</h2>
+      <h2 className="text-2xl font-bold mb-4 w-full text-left max-w-2xl">{sectionLabel} {search && <>/ <span className="font-normal">Search: {search}</span></>}</h2>
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : stories.length === 0 ? (
-        <div className="text-center text-muted-foreground">No stories yet.</div>
+        <div className="text-center text-muted-foreground">
+          No {sectionLabel.toLowerCase()} found.
+        </div>
       ) : (
-        <div className="space-y-4 w-full max-w-2xl">
+        <div className="space-y-4 w-full max-w-2xl animate-fade-in">
           {stories.map((story) => (
-            <Card key={story.id} className="p-4 flex flex-col">
+            <Card key={story.id} className="p-4 flex flex-col bg-card/90 backdrop-blur">
               <div className="font-semibold mb-1">{story.title}</div>
               <audio controls src={story.audio_url} className="w-full mt-2"/>
-              <span className="text-xs text-muted-foreground mt-1">
-                Uploaded {new Date(story.created_at).toLocaleString()}
-              </span>
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>{story.category ? story.category.charAt(0).toUpperCase() + story.category.slice(1) : "Uncategorized"}</span>
+                <span>Uploaded {new Date(story.created_at).toLocaleString()}</span>
+              </div>
             </Card>
           ))}
         </div>
