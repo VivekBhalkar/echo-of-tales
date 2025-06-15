@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,20 +35,17 @@ export default function Navbar() {
             <Home size={22} className="text-primary" />
           </Link>
         </Button>
-        {/* Logo Image with Reflection */}
+        {/* Logo Image - reflection removed */}
         <Link to="/stories" className="flex items-center select-none" style={{ minHeight: 40 }}>
-          <div className="logo-reflection relative flex flex-col items-center">
-            <img
-              src="/lovable-uploads/1d104bc9-dd41-40e5-9f02-6d09d043d69e.png"
-              alt="AudioStory Logo"
-              className="h-10 w-auto max-w-[40px] rounded-xl shadow-lg bg-black"
-              style={{
-                objectFit: "contain",
-                boxShadow: "0 0 16px #00ff99a0",
-              }}
-            />
-            {/* Reflection is handled via CSS pseudo-element */}
-          </div>
+          <img
+            src="/lovable-uploads/1d104bc9-dd41-40e5-9f02-6d09d043d69e.png"
+            alt="AudioStory Logo"
+            className="h-10 w-auto max-w-[40px] rounded-xl shadow-lg bg-black"
+            style={{
+              objectFit: "contain",
+              boxShadow: "0 0 16px #00ff99a0",
+            }}
+          />
         </Link>
       </div>
       <div className="flex gap-4 items-center">
