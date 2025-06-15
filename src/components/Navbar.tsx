@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import UserDropdown from "@/components/UserDropdown";
 
 export default function Navbar() {
@@ -21,6 +21,12 @@ export default function Navbar() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Handle Logout
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   return (
     <nav className="w-full fixed left-0 top-0 z-50 flex justify-between items-center px-6 py-3 bg-card shadow-sm border-b border-primary/60">
@@ -51,7 +57,17 @@ export default function Navbar() {
         )}
       </div>
       <div className="flex gap-4 items-center">
-        {!user && (
+        {user ? (
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Logout"
+            onClick={handleLogout}
+            className="hover:bg-destructive/80 hover:text-destructive"
+          >
+            <LogOut size={20} />
+          </Button>
+        ) : (
           <Button
             asChild
             variant="default"
