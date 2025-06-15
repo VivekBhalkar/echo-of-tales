@@ -29,7 +29,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center px-6 py-3 bg-card shadow-sm sticky top-0 z-40 border-b border-primary/60">
+    <nav className="w-full fixed left-0 top-0 z-50 flex justify-between items-center px-6 py-3 bg-card shadow-sm border-b border-primary/60">
       <div className="flex items-center gap-3">
         <Button asChild variant="ghost" size="icon" className="hover-scale">
           <Link to="/home">
