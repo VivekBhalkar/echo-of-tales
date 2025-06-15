@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut, User as UserIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { User as UserIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 function getInitials(name: string | null) {
   if (!name) return "U";
@@ -14,18 +14,9 @@ function getInitials(name: string | null) {
 }
 
 export default function UserDropdown() {
-  const [open, setOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<{ name: string | null; email: string | null } | null>(null);
   const navigate = useNavigate();
-  const menuRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Dropdown position state
-  const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
-
-  // this is the minimal screen margin you'd like, e.g. 3px to 4px for a little gap
-  const SCREEN_MARGIN = 3;
 
   useEffect(() => {
     const getUserAndProfile = async () => {
@@ -48,114 +39,25 @@ export default function UserDropdown() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Close dropdown if click outside
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (open && menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    window.addEventListener("mousedown", handleClick);
-    return () => window.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  // Position the dropdown: align left if near left, right if near right, else center below icon
-  useLayoutEffect(() => {
-    if (open && dropdownRef.current && menuRef.current) {
-      const dropdown = dropdownRef.current;
-      const button = menuRef.current;
-      const dropdownRect = dropdown.getBoundingClientRect();
-      const buttonRect = button.getBoundingClientRect();
-      const windowWidth = window.innerWidth;
-
-      let left: number;
-
-      // 1. If button is very close to left edge, align dropdown with small margin (SCREEN_MARGIN)
-      if (buttonRect.left < SCREEN_MARGIN + 2) {
-        left = SCREEN_MARGIN;
-      }
-      // 2. If button/dropdown would overflow right, clamp to right border - margin
-      else if (buttonRect.left + dropdownRect.width > windowWidth - SCREEN_MARGIN) {
-        left = windowWidth - SCREEN_MARGIN - dropdownRect.width;
-      }
-      // 3. Else: center dropdown below icon
-      else {
-        left = buttonRect.left + buttonRect.width / 2 - dropdownRect.width / 2;
-        // Ensure the result never goes out of bounds (just in case)
-        left = Math.max(SCREEN_MARGIN, Math.min(left, windowWidth - SCREEN_MARGIN - dropdownRect.width));
-      }
-
-      // Move the dropdown 2px further down and 100px to the left from its computed position
-      setDropdownStyles({
-        position: "absolute",
-        top: button.offsetHeight + 12,
-        minWidth: 200,
-        left: left - 100, // updated to shift 100px left
-        zIndex: 9999,
-      });
-    }
-  }, [open]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setOpen(false);
-    navigate("/auth");
-  };
-
   if (!user || !profile) return null;
 
+  // When clicked, navigate to /profile
   return (
-    <div className="relative" ref={menuRef}>
-      <button
-        type="button"
-        aria-label="Open user menu"
-        className="rounded-full flex items-center justify-center w-10 h-10 bg-muted hover:bg-accent transition"
-        onClick={() => setOpen((prev) => !prev)}
-        style={{
-          boxShadow: open
-            ? "0 0 14px 3px #2295ff88, 0 2px 8px #0002"
-            : undefined,
-          transition: "box-shadow 0.2s",
-        }}
-      >
-        <Avatar className="h-9 w-9">
-          <AvatarFallback>
-            <UserIcon size={20} className="text-primary" />
-          </AvatarFallback>
-        </Avatar>
-      </button>
-      {open && (
-        <div
-          ref={dropdownRef}
-          style={{
-            ...dropdownStyles,
-            background: "var(--card, #111827)",
-            borderRadius: "0.5rem",
-            border: "1px solid var(--border, #1e293b)",
-            boxShadow: "0 0 24px 6px #2295ff77, 0 8px 28px #0002",
-            padding: 16,
-            marginTop: 0,
-            animation: "fade-in 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
-          }}
-          className="z-[60] p-4 min-w-[200px] animate-fade-in"
-        >
-          <div className="flex flex-col items-center gap-2 pb-2 border-b border-border mb-2">
-            <Avatar className="h-12 w-12 mb-1 ring-1 ring-primary">
-              <AvatarFallback className="text-xl">{getInitials(profile.name)}</AvatarFallback>
-            </Avatar>
-            <div className="font-semibold">{profile.name || "No name"}</div>
-            <div className="text-sm text-muted-foreground truncate w-full text-center">{profile.email}</div>
-          </div>
-          <Button
-            onClick={handleLogout}
-            variant="destructive"
-            className="w-full"
-          >
-            <LogOut size={18} className="mr-2" />
-            Logout
-          </Button>
-        </div>
-      )}
-    </div>
+    <button
+      type="button"
+      aria-label="Your profile"
+      className="rounded-full flex items-center justify-center w-10 h-10 bg-muted hover:bg-accent transition"
+      style={{
+        boxShadow: "0 0 14px 3px #2295ff88, 0 2px 8px #0002",
+        transition: "box-shadow 0.2s",
+      }}
+      onClick={() => navigate("/profile")}
+    >
+      <Avatar className="h-9 w-9">
+        <AvatarFallback>
+          <UserIcon size={20} className="text-primary" />
+        </AvatarFallback>
+      </Avatar>
+    </button>
   );
 }
