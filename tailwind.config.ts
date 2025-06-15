@@ -27,7 +27,6 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          lighting: "var(--lighting-green)", // Custom lighting green
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -70,11 +69,9 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        // Add a futuristic sans font for vibe if available
         neon: ["'Orbitron'", "ui-sans-serif", "system-ui"],
       },
       boxShadow: {
-        'neon': '0 0 16px 2px #00ff99, 0 0 2px 1px #000',
       },
       keyframes: {
         'accordion-down': {

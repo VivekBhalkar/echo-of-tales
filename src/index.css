@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,12 +7,12 @@
 
 @layer base {
   :root {
-    --background: 223 14% 10%;         /* Deep charcoal */
-    --foreground: 220 20% 95%;         /* Very light gray for high contrast */
-    --card: 224 14% 15%;               /* Card background, slightly lighter */
+    --background: 223 14% 10%;         
+    --foreground: 220 20% 95%;         
+    --card: 224 14% 15%;               
     --card-foreground: 220 20% 95%;
 
-    --primary: 220 90% 56%;            /* Blue-tone accent for minimal neon */
+    --primary: 220 90% 56%;            
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 8% 22%;
@@ -34,7 +35,8 @@
     --shadow-glass: 0 8px 32px 0 rgba(9,14,21,0.31);
     --glass-blur: blur(18px);
 
-    --lighting-glow: 0 0 12px #4f8aff;
+    /* REMOVED: --lighting-glow */
+    /* REMOVED: --lighting-green, --lighting-green-soft */
   }
 
   .dark {
@@ -69,9 +71,7 @@
     --sidebar-background: 225 20% 7%;
     --sidebar-foreground: 136 100% 80%;
 
-    --lighting-green: #00ff99;
-    --lighting-green-soft: #00eb69;
-    --lighting-glow: 0 0 10px var(--lighting-green), 0 0 24px var(--lighting-green);
+    /* REMOVED: --lighting-green, --lighting-green-soft, --lighting-glow */
   }
 }
 
