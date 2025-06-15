@@ -24,8 +24,8 @@ export default function UserDropdown() {
   // Dropdown position state
   const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
 
-  // this margin ensures the dropdown is always at least 0.5cm (~19px) away from browser edges
-  const SCREEN_MARGIN = 19; // 0.5cm ~= 18.9px
+  // this margin ensures the dropdown is always at least 9px away from browser edges
+  const SCREEN_MARGIN = 9; // 0.5cm ~= 18.9px
 
   useEffect(() => {
     const getUserAndProfile = async () => {
