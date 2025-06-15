@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, User as UserIcon, Loader2, Image as ImageIcon } from "lucide-react";
+import { LogOut, User as UserIcon, Loader2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -80,12 +80,7 @@ export default function ProfilePage() {
     }
   };
 
-  // --- Avatar upload ---
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    // No storage bucket yet, maybe add later!
-    toast({ title: "Avatar upload not implemented", description: "Avatar upload coming soon." });
-  };
+  // Remove file input for avatar upload
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -119,24 +114,22 @@ export default function ProfilePage() {
   return (
     <div className="max-w-md mx-auto mt-8 bg-card p-6 rounded-xl shadow flex flex-col items-center gap-6 border border-primary/10">
       <div className="flex flex-col items-center gap-2 w-full">
-        <Avatar className="h-20 w-20 mb-1 ring-2 ring-primary">
-          {profile.avatar_url ? (
-            <AvatarImage src={profile.avatar_url} alt={profile.name || "User"} />
-          ) : (
-            <AvatarFallback className="text-2xl bg-muted">
-              {getInitials(profile.name)}
-            </AvatarFallback>
-          )}
-        </Avatar>
-        <div>
-          <Input
-            type="file"
-            className="max-w-[160px] py-1.5 text-xs"
-            disabled={saving}
-            onChange={handleAvatarChange}
-            accept="image/*"
-          />
+        <div className="relative h-20 w-20 mb-1">
+          <Avatar className="h-20 w-20 ring-2 ring-primary">
+            {profile.avatar_url ? (
+              <AvatarImage src={profile.avatar_url} alt={profile.name || "User"} />
+            ) : (
+              <AvatarFallback className="text-2xl bg-muted">
+                {getInitials(profile.name)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          {/* Plus symbol overlays bottom-right of avatar */}
+          <span className="absolute right-0 bottom-0 bg-primary text-primary-foreground rounded-full flex items-center justify-center w-8 h-8 border-2 border-background shadow-lg">
+            <Plus size={24} />
+          </span>
         </div>
+        {/* Removed file input */}
       </div>
       <div className="flex flex-col w-full items-center gap-2">
         <label className="text-sm font-bold mb-0.5">Name:</label>
