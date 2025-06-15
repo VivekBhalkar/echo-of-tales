@@ -71,7 +71,7 @@ export default function UserDropdown() {
       >
         <Avatar className="h-9 w-9">
           <AvatarFallback>
-            <UserIcon size={20} />
+            <UserIcon size={20} className="text-primary" />
           </AvatarFallback>
         </Avatar>
       </button>
