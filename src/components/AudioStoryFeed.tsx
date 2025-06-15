@@ -2,16 +2,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Database } from "@/integrations/supabase/types";
 
-type AudioStory = {
-  id: string;
-  title: string;
-  audio_url: string;
-  uploaded_by: string;
-  created_at: string;
-  category?: string;
-  cover_image_url?: string | null; // NEW: allow nulls (for backward compatibility)
-};
+// Use the Supabase-generated row type for audio_stories
+type AudioStoryRow = Database["public"]["Tables"]["audio_stories"]["Row"];
 
 interface AudioStoryFeedProps {
   category?: string; // "music" | "podcast" | "stories" | "all"
@@ -19,7 +13,7 @@ interface AudioStoryFeedProps {
 }
 
 export default function AudioStoryFeed({ category = "all", search = "" }: AudioStoryFeedProps) {
-  const [stories, setStories] = useState<AudioStory[]>([]);
+  const [stories, setStories] = useState<AudioStoryRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,13 +29,14 @@ export default function AudioStoryFeed({ category = "all", search = "" }: AudioS
         query = query.eq("category", category);
       }
 
-      const { data, error } = await query;
-      let filtered: AudioStory[] = [];
+      // Use any here to prevent deeply nested TypeScript inference, then cast to AudioStoryRow[]
+      const { data, error } = await query as any;
+      let filtered: AudioStoryRow[] = [];
       if (!error && data) {
-        filtered = (data as AudioStory[]);
+        filtered = (data as AudioStoryRow[]);
         if (search) {
           filtered = filtered.filter(story =>
-            story.title.toLowerCase().includes(search.toLowerCase())
+            (story.title || "").toLowerCase().includes(search.toLowerCase())
           );
         }
       }
@@ -95,8 +90,15 @@ export default function AudioStoryFeed({ category = "all", search = "" }: AudioS
               <div className="font-semibold mb-1">{story.title}</div>
               <audio controls src={story.audio_url} className="w-full mt-2"/>
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>{story.category ? story.category.charAt(0).toUpperCase() + story.category.slice(1) : "Uncategorized"}</span>
-                <span>Uploaded {story.created_at ? new Date(story.created_at).toLocaleString() : ""}</span>
+                <span>
+                  {/* Support undefined category gracefully */}
+                  {("category" in story && story.category)
+                    ? story.category.charAt(0).toUpperCase() + story.category.slice(1)
+                    : "Uncategorized"}
+                </span>
+                <span>
+                  Uploaded {story.created_at ? new Date(story.created_at).toLocaleString() : ""}
+                </span>
               </div>
             </Card>
           ))}
