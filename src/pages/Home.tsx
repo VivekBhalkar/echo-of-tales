@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Home, Plus, Music, Podcast, FileAudio } from "lucide-react";
@@ -44,17 +43,6 @@ export default function HomePage() {
             }}
           />
         </div>
-
-        {/* Add Button -- routes to /stories using Link for reliability */}
-        <Button
-          asChild
-          aria-label="Add"
-          className="icon-btn ml-2"
-        >
-          <Link to="/stories">
-            <Plus size={24} className="text-primary" />
-          </Link>
-        </Button>
       </div>
 
       {/* Filters as smooth tabs */}
