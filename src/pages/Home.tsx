@@ -1,9 +1,10 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Home, Plus, Music, Podcast, FileAudio } from "lucide-react";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
 import AudioStoryUpload from "@/components/AudioStoryUpload";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+// Removed Sheet, SheetContent, SheetTrigger imports
 
 const FILTERS = [
   { id: "all", label: "All", icon: Home },
@@ -13,9 +14,9 @@ const FILTERS = [
 ];
 
 export default function HomePage() {
-  const [uploadOpen, setUploadOpen] = useState(false);
   const [active, setActive] = useState("all");
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start w-full bg-background pb-10 relative">
@@ -44,18 +45,14 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Add Button */}
-        <Sheet open={uploadOpen} onOpenChange={setUploadOpen}>
-          <SheetTrigger asChild>
-            <button aria-label="Add" className="icon-btn ml-2">
-              <Plus size={24} className="text-primary" />
-            </button>
-          </SheetTrigger>
-          <SheetContent side="right" className="glass-sheet">
-            <h2 className="mb-4 text-xl font-bold text-primary">Upload a Story</h2>
-            <AudioStoryUpload onUpload={() => setUploadOpen(false)} />
-          </SheetContent>
-        </Sheet>
+        {/* Add Button -- NOW ROUTES TO /stories */}
+        <button
+          aria-label="Add"
+          className="icon-btn ml-2"
+          onClick={() => navigate("/stories")}
+        >
+          <Plus size={24} className="text-primary" />
+        </button>
       </div>
 
       {/* Filters as smooth tabs */}
