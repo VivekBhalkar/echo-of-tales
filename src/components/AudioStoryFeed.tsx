@@ -9,7 +9,8 @@ type AudioStory = {
   audio_url: string;
   uploaded_by: string;
   created_at: string;
-  category?: string; // optional for backward compatibility
+  category?: string;
+  cover_image_url?: string | null; // NEW: allow nulls (for backward compatibility)
 };
 
 interface AudioStoryFeedProps {
@@ -66,7 +67,9 @@ export default function AudioStoryFeed({ category = "all", search = "" }: AudioS
 
   return (
     <div className="flex flex-col items-center w-full">
-      <h2 className="text-2xl font-bold mb-4 w-full text-left max-w-2xl">{sectionLabel} {search && <>/ <span className="font-normal">Search: {search}</span></>}</h2>
+      <h2 className="text-2xl font-bold mb-4 w-full text-left max-w-2xl">
+        {sectionLabel} {search && <>/ <span className="font-normal">Search: {search}</span></>}
+      </h2>
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : stories.length === 0 ? (
@@ -76,12 +79,24 @@ export default function AudioStoryFeed({ category = "all", search = "" }: AudioS
       ) : (
         <div className="space-y-4 w-full max-w-2xl animate-fade-in">
           {stories.map((story) => (
-            <Card key={story.id} className="p-4 flex flex-col bg-card/90 backdrop-blur">
+            <Card key={story.id} className="p-4 flex flex-col bg-card/90 backdrop-blur relative overflow-hidden">
+              {/* Show Cover Image if present */}
+              {story.cover_image_url && (
+                <div className="w-full h-36 md:h-48 rounded-lg overflow-hidden mb-3 bg-muted/60 relative">
+                  <img
+                    src={story.cover_image_url}
+                    alt={story.title + " cover"}
+                    className="w-full h-full object-cover"
+                    style={{ objectPosition: "center" }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/5 to-transparent pointer-events-none" />
+                </div>
+              )}
               <div className="font-semibold mb-1">{story.title}</div>
               <audio controls src={story.audio_url} className="w-full mt-2"/>
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
                 <span>{story.category ? story.category.charAt(0).toUpperCase() + story.category.slice(1) : "Uncategorized"}</span>
-                <span>Uploaded {new Date(story.created_at).toLocaleString()}</span>
+                <span>Uploaded {story.created_at ? new Date(story.created_at).toLocaleString() : ""}</span>
               </div>
             </Card>
           ))}

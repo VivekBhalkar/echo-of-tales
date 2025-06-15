@@ -15,15 +15,37 @@ const CATEGORIES = [
   { id: "stories", label: "Stories" },
 ];
 
+// Helper to upload cover image to Supabase Storage
+async function uploadCoverImage(userId: string, file: File): Promise<string | null> {
+  if (!file) return null;
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${userId}/covers/${Date.now()}.${fileExt}`;
+  const { data, error } = await supabase.storage
+    .from("audio-story-covers")
+    .upload(filePath, file);
+  if (error) throw new Error(error.message);
+  // Return public URL
+  return `https://pxnwcbxhqwsuoqmvcsph.supabase.co/storage/v1/object/public/audio-story-covers/${filePath}`;
+}
+
 export default function AudioStoryUpload({ onUpload }: Props) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("music");
   const [file, setFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrlPreview, setImageUrlPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFile(e.target.files[0]);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setImageFile(e.target.files[0]);
+      setImageUrlPreview(URL.createObjectURL(e.target.files[0]));
+    }
   };
 
   const handleUpload = async (e: React.FormEvent) => {
@@ -39,9 +61,20 @@ export default function AudioStoryUpload({ onUpload }: Props) {
       setUploading(false);
       return;
     }
+    // Upload cover image if present
+    let coverImageUrl: string | null = null;
+    if (imageFile) {
+      try {
+        coverImageUrl = await uploadCoverImage(user.id, imageFile);
+      } catch (err: any) {
+        toast({title: "Image upload failed", description: err?.message, variant: "destructive"});
+        setUploading(false);
+        return;
+      }
+    }
+    // Upload audio
     const fileExt = file.name.split(".").pop();
     const filePath = `${user.id}/${Date.now()}.${fileExt}`;
-    // 1. Upload file
     const { data: storageData, error: storageErr } = await supabase
       .storage
       .from("story-audio")
@@ -51,13 +84,14 @@ export default function AudioStoryUpload({ onUpload }: Props) {
       setUploading(false);
       return;
     }
-    // 2. Create DB record
+    // Save to DB with (optionally) cover_image_url
     const { error: dbErr } = await supabase.from("audio_stories").insert([
       {
         title,
         category,
         audio_url: `https://pxnwcbxhqwsuoqmvcsph.supabase.co/storage/v1/object/public/story-audio/${filePath}`,
-        uploaded_by: user.id
+        uploaded_by: user.id,
+        cover_image_url: coverImageUrl,
       }
     ]);
     if (dbErr) {
@@ -67,6 +101,8 @@ export default function AudioStoryUpload({ onUpload }: Props) {
       setTitle("");
       setFile(null);
       setCategory("music");
+      setImageFile(null);
+      setImageUrlPreview(null);
       if (onUpload) onUpload();
     }
     setUploading(false);
@@ -102,6 +138,26 @@ export default function AudioStoryUpload({ onUpload }: Props) {
           ))}
         </div>
       </div>
+      {/* Image Upload & Preview */}
+      <div>
+        <label className="block font-semibold text-sm mb-1">Optional background image:</label>
+        <Input 
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          disabled={uploading}
+        />
+        {imageUrlPreview && (
+          <div className="mt-2 w-full flex justify-center">
+            <img
+              src={imageUrlPreview}
+              alt="Image preview"
+              className="max-h-32 rounded-lg border shadow-md object-cover"
+              style={{ maxWidth: "220px" }}
+            />
+          </div>
+        )}
+      </div>
       <Input 
         type="file"
         accept="audio/*"
@@ -114,3 +170,4 @@ export default function AudioStoryUpload({ onUpload }: Props) {
     </form>
   );
 }
+
