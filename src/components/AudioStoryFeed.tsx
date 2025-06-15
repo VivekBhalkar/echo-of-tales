@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,7 +68,7 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
           No {sectionLabel.toLowerCase()} found.
         </div>
       ) : (
-        <div className="flex flex-row gap-4 w-full overflow-x-auto scrollbar-thin pb-2">
+        <div className="flex flex-row gap-4 w-full overflow-x-auto no-scrollbar pb-2">
           {stories.map((story) => (
             <div key={story.id} className="flex flex-col items-center min-w-[96px]">
               <button
