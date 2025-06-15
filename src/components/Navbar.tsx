@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
-import UserMenu from "@/components/UserMenu";
+// Removed UserMenu import
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -45,9 +45,8 @@ export default function Navbar() {
         </Link>
       </div>
       <div className="flex gap-4 items-center">
-        {user ? (
-          <UserMenu />
-        ) : (
+        {/* Remove UserMenu, only show login button if not logged in */}
+        {!user && (
           <Button
             asChild
             variant="default"
@@ -56,6 +55,7 @@ export default function Navbar() {
             <Link to="/auth">Login</Link>
           </Button>
         )}
+        {/* If user is logged in, show nothing */}
       </div>
     </nav>
   );
