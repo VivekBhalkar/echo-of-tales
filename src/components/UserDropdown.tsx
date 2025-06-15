@@ -68,32 +68,36 @@ export default function UserDropdown() {
       const buttonRect = button.getBoundingClientRect();
       const windowWidth = window.innerWidth;
 
-      // Default style: dropdown appears below button, right-aligned
+      // Default: dropdown appears below button, right-aligned
       let style: React.CSSProperties = {
         top: button.offsetHeight + 8,
         minWidth: 200,
         right: 0,
       };
 
-      // Calculate the horizontal position for the dropdown
-      let leftPos = buttonRect.left;
-      let rightPos = windowWidth - (buttonRect.left + dropdownRect.width);
-
-      // By default, try to align with the button (right edge)
-      let left: number | "auto" = button.offsetLeft;
+      // Calculate positions
+      // Try to align with button as default, but clamp position within 0–9px margin of screen
+      let left = button.offsetLeft;
       let right: number | "auto" = "auto";
 
-      // If dropdown overflows right
-      if (buttonRect.left + dropdownRect.width + SCREEN_MARGIN > windowWidth) {
-        left = windowWidth - dropdownRect.width - SCREEN_MARGIN;
-        if (left < SCREEN_MARGIN) left = SCREEN_MARGIN;
+      // Compute candidate left/right
+      const fitsRight = buttonRect.left + dropdownRect.width <= windowWidth;
+      const overflowRight = buttonRect.left + dropdownRect.width > windowWidth;
+      const overflowLeft = buttonRect.left < 0;
+
+      // When too far left, shift to 0px (flush), but no minus margin
+      if (buttonRect.left < SCREEN_MARGIN) {
+        left = 0;
         right = "auto";
-      } else if (buttonRect.left < SCREEN_MARGIN) {
-        // If dropdown overflows left
-        left = SCREEN_MARGIN;
+      }
+      // When overflows right, clamp so right edge to 0 or SCREEN_MARGIN (never negative)
+      else if (buttonRect.left + dropdownRect.width > windowWidth - SCREEN_MARGIN) {
+        left = Math.max(windowWidth - dropdownRect.width, 0);
         right = "auto";
-      } else {
-        // Normal case
+      }
+      // Fits: just align with button
+      else {
+        // If left > SCREEN_MARGIN, you could nudge dropdown in by margin, but we allow 0–9px as requested
         left = button.offsetLeft;
         right = "auto";
       }
