@@ -36,7 +36,7 @@ export default function StoryPlayer() {
       <div className="w-full flex items-center sticky z-30 top-0 bg-background py-4 px-4 border-b border-muted">
         <button
           className="hover-scale rounded-lg bg-card px-2 py-1 flex items-center gap-2"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/home")}
         >
           <ArrowLeft size={22} />
           <span className="font-semibold">Back</span>
