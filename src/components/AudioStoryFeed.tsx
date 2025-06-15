@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import AudioPlayerModal from "./AudioPlayerModal";
 
 // Use the Supabase-generated row type for audio_stories, now with category!
 type AudioStoryRow = Database["public"]["Tables"]["audio_stories"]["Row"];
@@ -15,6 +16,10 @@ interface AudioStoryFeedProps {
 export default function AudioStoryFeed({ search = "", category = "all" }: AudioStoryFeedProps) {
   const [stories, setStories] = useState<AudioStoryRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal state for selected story
+  const [playerOpen, setPlayerOpen] = useState(false);
+  const [selectedStory, setSelectedStory] = useState<AudioStoryRow | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -50,6 +55,12 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
     sectionLabel = category.charAt(0).toUpperCase() + category.slice(1);
   }
 
+  // Click cover image to open player
+  const handleSelect = (story: AudioStoryRow) => {
+    setSelectedStory(story);
+    setPlayerOpen(true);
+  };
+
   return (
     <div className="flex flex-col w-full items-start">
       <h2 className="text-2xl font-bold mb-4 w-full text-left max-w-2xl">
@@ -64,9 +75,10 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
       ) : (
         <div className="flex flex-row gap-4 w-full overflow-x-auto scrollbar-thin pb-2">
           {stories.map((story) => (
-            <div
+            <button
               key={story.id}
-              className="rounded-xl overflow-hidden bg-muted/60 flex-shrink-0"
+              onClick={() => handleSelect(story)}
+              className="rounded-xl overflow-hidden bg-muted/60 flex-shrink-0 focus:outline-none hover-scale transition"
               style={{
                 width: 96,
                 height: 96,
@@ -80,7 +92,10 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
                 border: "2px solid rgba(120,255,189,0.18)",
                 boxShadow: "0 1.5px 10px 0 rgba(38,255,171,0.08)",
                 background: "#232B35",
+                cursor: "pointer"
               }}
+              aria-label={story.title || "Story cover"}
+              tabIndex={0}
             >
               {story.cover_image_url ? (
                 <img
@@ -99,9 +114,20 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
                   No Image
                 </div>
               )}
-            </div>
+            </button>
           ))}
         </div>
+      )}
+      {/* Audio player modal */}
+      {selectedStory && (
+        <AudioPlayerModal
+          open={playerOpen}
+          onClose={() => setPlayerOpen(false)}
+          audioUrl={selectedStory.audio_url || ""}
+          coverUrl={selectedStory.cover_image_url || ""}
+          title={selectedStory.title || ""}
+          artist={selectedStory.uploaded_by || ""}
+        />
       )}
     </div>
   );

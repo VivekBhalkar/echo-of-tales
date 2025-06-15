@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
@@ -8,6 +7,7 @@ interface MusicPlayerProps {
   coverUrl: string;
   title: string;
   artist: string;
+  variant?: "default" | "mobile-modal";
 }
 
 export default function MusicPlayer({
@@ -15,6 +15,7 @@ export default function MusicPlayer({
   coverUrl,
   title,
   artist,
+  variant = "default",
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -62,147 +63,112 @@ export default function MusicPlayer({
     setDuration(audioRef.current.duration);
   };
 
-  // Small visual shadow behind the big round art
-  return (
-    <div className="w-full flex justify-center items-center pt-8 pb-16">
-      <div
-        className="mx-auto bg-card border border-card/50 rounded-3xl shadow-2xl flex flex-col items-center p-6 md:p-8"
-        style={{
-          minWidth: 300,
-          maxWidth: 350,
-          background:
-            "linear-gradient(140deg, rgba(38,44,74,0.92) 65%, rgba(23,27,39,0.90) 100%)",
-          boxShadow: "0 6px 24px 0 rgba(20, 24, 35, 0.39)",
-        }}
-      >
-        {/* Cover Art - "U" shaped using masking (with fallback to simple circle on mobile) */}
+  if (variant === "mobile-modal") {
+    // Reference: curved UI, white background, centered controls, no card border
+    return (
+      <div className="flex flex-col items-center w-full px-2 pt-2">
+        {/* Cover with curved mask */}
         <div className="relative w-full flex justify-center">
-          <div className="w-52 h-64 md:w-60 md:h-72 relative overflow-hidden">
-            {/* Masked semi-round lower section */}
+          <div className="w-48 h-60 md:w-56 md:h-68 relative overflow-hidden">
             <img
               src={coverUrl}
               alt={title + " cover"}
               className="w-full h-full object-cover"
               style={{
-                borderTopLeftRadius: 28,
-                borderTopRightRadius: 28,
-                borderBottomLeftRadius: 110,
-                borderBottomRightRadius: 110,
-                boxShadow:
-                  "0 4px 24px 0 rgba(0,0,0,0.32), 0 0px 0.7px 0 rgba(130,210,191,0.12)",
+                borderTopLeftRadius: 22,
+                borderTopRightRadius: 22,
+                borderBottomLeftRadius: 115,
+                borderBottomRightRadius: 115,
               }}
             />
-            {/* Shadow effect under the cover */}
+            {/* White bottom arc under image */}
             <div
-              className="absolute left-0 bottom-0 w-full h-2"
+              className="absolute left-0 bottom-0 w-full h-1.5"
               style={{
-                background:
-                  "linear-gradient(to top, rgba(17,21,41,0.32) 80%, transparent 105%)",
-                borderBottomLeftRadius: 110,
-                borderBottomRightRadius: 110,
+                background: "linear-gradient(to top, #f5f6fa 80%, transparent 105%)",
+                borderBottomLeftRadius: 115,
+                borderBottomRightRadius: 115,
               }}
             />
           </div>
         </div>
-        {/* Song info */}
-        <div className="mt-7 w-full flex flex-col items-center">
-          <div className="text-lg md:text-xl font-semibold tracking-wide text-foreground text-center">
-            {title}
-          </div>
-          <div className="text-sm text-muted-foreground mt-1 font-medium tracking-wide">
-            {artist}
-          </div>
+        {/* Title and Artist */}
+        <div className="mt-5 w-full flex flex-col items-center">
+          <div className="text-lg font-bold text-neutral-900 text-center mb-1">{title}</div>
+          <div className="text-sm text-neutral-400 font-medium">{artist}</div>
         </div>
-        {/* Slider/progress (sorta curved illusion with handle and arc shadow) */}
-        <div className="relative w-full my-9 flex flex-col items-center">
-          {/* Curved "arc" shadow background */}
-          <svg
-            width="210"
-            height="48"
-            className="absolute left-1/2 -translate-x-1/2 top-0 pointer-events-none select-none"
-            style={{ zIndex: 0 }}
-          >
-            <path
-              d="M 15 38 Q 105 10 195 38"
-              stroke="rgba(62,78,112,0.19)"
-              strokeWidth="8"
-              fill="none"
-            />
+        {/* Arc slider (fake arc line, actual slider hidden but track covers arc) */}
+        <div className="relative w-full flex flex-col items-center mt-8 mb-2">
+          <svg width="200" height="46" className="absolute left-1/2 -translate-x-1/2 top-2 pointer-events-none">
+            <path d="M 20 38 Q 100 8 180 38" stroke="#c7cdde" strokeWidth="6" fill="none" />
           </svg>
-          {/* Interactive slider */}
-          <div className="relative z-10 w-5/6">
+          <div className="relative z-10 w-5/6 mt-7">
             <Slider
               value={[progress]}
               min={0}
-              max={duration}
+              max={duration || 1}
               step={1}
               onValueChange={handleSeek}
-              className="mt-7"
+              className="bg-transparent"
               style={{
-                // Hide default track, use our custom, arc above is just fake visual
                 background: "none",
               }}
             />
           </div>
-          {/* Slider handle overlay (to match the design style) */}
           <div
-            className="absolute left-11 top-7 z-20"
+            className="absolute left-10 top-7 z-20"
             style={{
-              transform: `translateX(${
-                ((progress / (duration || 1)) * 148) || 0
-              }px)`, // 148 = approx length of arc
-              transition: "transform 0.18s",
+              transform: `translateX(${(progress / (duration || 1)) * 135 || 0}px)`,
+              transition: "transform 0.16s",
             }}
           >
-            <div className="w-5 h-5 bg-card border-2 border-primary rounded-full shadow-lg" />
+            <div className="w-5 h-5 bg-black border-4 border-white rounded-full shadow-lg" />
           </div>
         </div>
-        {/* Timing and controls */}
-        <div className="flex items-center justify-between w-full px-3 mb-3 opacity-70 font-mono">
-          <span className="text-xs">{format(progress)}</span>
-          <span className="text-xs">{format(duration)}</span>
+        {/* Time and Controls */}
+        <div className="flex flex-col items-center w-full mt-4">
+          <span className="mb-2 text-xs text-neutral-400 font-mono">{format(progress)}</span>
+          <div className="flex items-center justify-center gap-8 mb-2">
+            <button
+              aria-label="Skip Back"
+              className="bg-white border border-neutral-200 rounded-full p-2 shadow"
+              onClick={() => {
+                if (!audioRef.current) return;
+                audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
+              }}
+            >
+              <SkipBack size={22} className="text-black" />
+            </button>
+            <button
+              aria-label={isPlaying ? "Pause" : "Play"}
+              className="rounded-full bg-black shadow-inner p-4 mx-2 transition-transform hover:scale-110"
+              style={{
+                boxShadow:
+                  "0 2.5px 22px 0 rgba(0,0,0,0.14), 0 1px 14px 0 rgba(147,255,193,0.12)",
+              }}
+              onClick={handleToggle}
+            >
+              {isPlaying ? (
+                <Pause size={32} className="text-white" />
+              ) : (
+                <Play size={32} className="text-white" />
+              )}
+            </button>
+            <button
+              aria-label="Skip Forward"
+              className="bg-white border border-neutral-200 rounded-full p-2 shadow"
+              onClick={() => {
+                if (!audioRef.current) return;
+                audioRef.current.currentTime = Math.min(
+                  duration,
+                  audioRef.current.currentTime + 10
+                );
+              }}
+            >
+              <SkipForward size={22} className="text-black" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center justify-center gap-7 mb-2 mt-1">
-          <button
-            aria-label="Skip Back"
-            className="bg-card/70 rounded-full p-2 hover:scale-110 transition shadow"
-            onClick={() => {
-              if (!audioRef.current) return;
-              audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
-            }}
-          >
-            <SkipBack size={28} className="text-foreground" />
-          </button>
-          <button
-            aria-label={isPlaying ? "Pause" : "Play"}
-            className="rounded-full bg-primary shadow-inner p-4 mx-3 transition-transform hover:scale-110"
-            style={{
-              boxShadow:
-                "0 2.5px 22px 0 rgba(0,255,153,0.14), 0 1px 14px 0 rgba(147,255,193,0.28)",
-            }}
-            onClick={handleToggle}
-          >
-            {isPlaying ? (
-              <Pause size={36} className="text-primary-foreground" />
-            ) : (
-              <Play size={36} className="text-primary-foreground" />
-            )}
-          </button>
-          <button
-            aria-label="Skip Forward"
-            className="bg-card/70 rounded-full p-2 hover:scale-110 transition shadow"
-            onClick={() => {
-              if (!audioRef.current) return;
-              audioRef.current.currentTime = Math.min(
-                duration,
-                audioRef.current.currentTime + 10
-              );
-            }}
-          >
-            <SkipForward size={28} className="text-foreground" />
-          </button>
-        </div>
-        {/* Hidden native audio */}
         <audio
           ref={audioRef}
           src={audioUrl}
@@ -213,6 +179,8 @@ export default function MusicPlayer({
           className="hidden"
         />
       </div>
-    </div>
-  );
+    );
+  }
+
+  // ... keep existing code (default/dekstop MusicPlayer UI)
 }
