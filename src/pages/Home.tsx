@@ -3,9 +3,7 @@ import { useState } from "react";
 import { Home, Plus, Music, Podcast, FileAudio } from "lucide-react";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
 import AudioStoryUpload from "@/components/AudioStoryUpload";
-import Navbar from "@/components/Navbar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const FILTERS = [
@@ -20,58 +18,68 @@ export default function HomePage() {
   const [active, setActive] = useState("all");
   const [search, setSearch] = useState("");
 
-  // You may implement search/filter logic in the feed if needed
+  // Placeholder for search/filter logic in AudioStoryFeed if needed
 
   return (
-    <div className="bg-background min-h-screen">
-      <Navbar />
-      {/* Top bar: Home icon, search bar, Add button */}
-      <div className="flex items-center justify-between gap-2 sticky top-0 z-30 bg-card/90 border-b border-primary/30 px-4 py-3 backdrop-blur shadow-sm mb-2">
-        {/* Home icon - clicking sends to home (reloads) */}
-        <Button variant="ghost" size="icon" className="hover-scale" onClick={() => window.location.href = "/"}>
+    <div className="min-h-screen flex flex-col items-center justify-start w-full bg-background pb-10">
+      {/* Top glass nav bar */}
+      <div className="w-full flex items-center justify-between sticky top-0 z-40 py-4 px-4 md:px-8 glass-card backdrop-blur-lg border border-glass-border shadow-md bg-glass-bg/70">
+        {/* Home Icon */}
+        <button
+          className="icon-btn"
+          aria-label="Home"
+          onClick={() => window.location.href='/'}
+        >
           <Home size={22} className="text-primary" />
-        </Button>
-        {/* Search bar */}
-        <div className="flex-1 max-w-md mx-2">
-          <Input
-            type="search"
+        </button>
+        {/* Search Bar */}
+        <div className="flex-1 flex justify-center">
+          <input
+            type="text"
+            className="glass-input outline-none w-full max-w-[340px] mx-2 shadow"
             placeholder="Search stories, music, podcasts..."
-            className="rounded-full bg-background border border-primary/20 px-4 text-foreground"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        {/* Add Story button opens upload sheet */}
+        {/* Add Button */}
         <Sheet open={uploadOpen} onOpenChange={setUploadOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="hover-scale" aria-label="Add">
+            <button aria-label="Add" className="icon-btn ml-2">
               <Plus size={22} className="text-primary" />
-            </Button>
+            </button>
           </SheetTrigger>
-          <SheetContent side="right" className="max-w-md w-full shadow-neon border border-primary/30">
-            <h2 className="mb-4 text-xl font-bold neon-text">Upload a Story</h2>
+          <SheetContent side="right" className="glass-sheet">
+            <h2 className="mb-4 text-xl font-bold" style={{color: "var(--primary)"}}>Upload a Story</h2>
             <AudioStoryUpload onUpload={() => setUploadOpen(false)} />
           </SheetContent>
         </Sheet>
       </div>
-      {/* Filters */}
-      <div className="flex items-center w-full justify-center gap-2 mb-8">
+      {/* Filters as tabs */}
+      <div className="flex items-center justify-center gap-2 mt-8 mb-7 w-full max-w-lg">
         {FILTERS.map(filter => (
-          <Button
+          <button
             key={filter.id}
-            variant={active === filter.id ? "default" : "outline"}
-            className={`rounded-full font-neon shadow-md text-base transition hover-scale
-              ${active === filter.id ? "bg-primary text-background neon-text" : "border-primary/40 text-primary/80"}`}
+            className={`tab-btn${active === filter.id ? " active" : ""}`}
             onClick={() => setActive(filter.id)}
           >
-            <filter.icon className="mr-1" size={18} />
+            <filter.icon size={18} className="inline mr-1" />
             {filter.label}
-          </Button>
+          </button>
         ))}
       </div>
-      {/* Audio story feed */}
-      <div className="flex flex-col items-center px-2 pb-8">
-        <AudioStoryFeed />
+      {/* Stories section */}
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-2xl glass-card p-8">
+          {/* "All" tab shows recent stories; others can be implemented later */}
+          {active === "all" ? (
+            <AudioStoryFeed />
+          ) : (
+            <div className="text-center text-muted-foreground py-16">
+              {active.charAt(0).toUpperCase() + active.slice(1)} section coming soon.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
