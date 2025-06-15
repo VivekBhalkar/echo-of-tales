@@ -8,11 +8,10 @@ import type { Database } from "@/integrations/supabase/types";
 type AudioStoryRow = Database["public"]["Tables"]["audio_stories"]["Row"];
 
 interface AudioStoryFeedProps {
-  category?: string; // "music" | "podcast" | "stories" | "all"
   search?: string;
 }
 
-export default function AudioStoryFeed({ category = "all", search = "" }: AudioStoryFeedProps) {
+export default function AudioStoryFeed({ search = "" }: AudioStoryFeedProps) {
   const [stories, setStories] = useState<AudioStoryRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,10 +23,6 @@ export default function AudioStoryFeed({ category = "all", search = "" }: AudioS
         .select("*")
         .order("created_at", { ascending: false })
         .limit(30);
-
-      if (category && category !== "all") {
-        query = query.eq("category", category);
-      }
 
       // Use any here to prevent deeply nested TypeScript inference, then cast to AudioStoryRow[]
       const { data, error } = await query as any;
@@ -43,22 +38,10 @@ export default function AudioStoryFeed({ category = "all", search = "" }: AudioS
       setStories(filtered);
       setLoading(false);
     })();
-  }, [category, search]);
+  }, [search]);
 
-  let sectionLabel: string;
-  switch (category) {
-    case "music":
-      sectionLabel = "Music";
-      break;
-    case "podcast":
-      sectionLabel = "Podcasts";
-      break;
-    case "stories":
-      sectionLabel = "Stories";
-      break;
-    default:
-      sectionLabel = "All";
-  }
+  // Section label removed category logic
+  const sectionLabel = "All";
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -90,12 +73,7 @@ export default function AudioStoryFeed({ category = "all", search = "" }: AudioS
               <div className="font-semibold mb-1">{story.title}</div>
               <audio controls src={story.audio_url} className="w-full mt-2"/>
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>
-                  {/* Support undefined category gracefully */}
-                  {("category" in story && story.category)
-                    ? story.category.charAt(0).toUpperCase() + story.category.slice(1)
-                    : "Uncategorized"}
-                </span>
+                <span>Uncategorized</span>
                 <span>
                   Uploaded {story.created_at ? new Date(story.created_at).toLocaleString() : ""}
                 </span>
