@@ -4,12 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Database } from "@/integrations/supabase/types";
 
-// Use the Supabase-generated row type for audio_stories
+// Use the Supabase-generated row type for audio_stories, now with category!
 type AudioStoryRow = Database["public"]["Tables"]["audio_stories"]["Row"];
 
 interface AudioStoryFeedProps {
   search?: string;
-  category?: string; // NEW
+  category?: string;
 }
 
 export default function AudioStoryFeed({ search = "", category = "all" }: AudioStoryFeedProps) {
@@ -21,18 +21,17 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
       setLoading(true);
       let query = supabase
         .from("audio_stories")
-        .select("*")
+        .select("id, title, category, audio_url, created_at, cover_image_url, uploaded_by") // include category!
         .order("created_at", { ascending: false })
         .limit(30);
 
-      // If specific category (not "all"), add category filter
+      // Apply category filter if not "all"
       if (category && category !== "all") {
-        // Only fetch rows with matching category
         query = query.eq("category", category);
       }
 
-      // Use any here to prevent deeply nested TypeScript inference, then cast to AudioStoryRow[]
-      const { data, error } = await query as any;
+      // Be explicit with the returned data type to avoid deep inference issues
+      const { data, error } = await query;
       let filtered: AudioStoryRow[] = [];
       if (!error && data) {
         filtered = (data as AudioStoryRow[]);
@@ -47,7 +46,7 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
     })();
   }, [search, category]);
 
-  // Section label should reflect the active category
+  // Section label logic
   let sectionLabel = "All";
   if (category && category !== "all") {
     sectionLabel = category.charAt(0).toUpperCase() + category.slice(1);
@@ -83,7 +82,11 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
               <div className="font-semibold mb-1">{story.title}</div>
               <audio controls src={story.audio_url} className="w-full mt-2"/>
               <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>{story.category ? (story.category.charAt(0).toUpperCase() + story.category.slice(1)) : "Uncategorized"}</span>
+                <span>
+                  {story.category
+                    ? story.category.charAt(0).toUpperCase() + story.category.slice(1)
+                    : "Uncategorized"}
+                </span>
                 <span>
                   Uploaded {story.created_at ? new Date(story.created_at).toLocaleString() : ""}
                 </span>

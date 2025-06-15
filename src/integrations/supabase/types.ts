@@ -12,6 +12,7 @@ export type Database = {
       audio_stories: {
         Row: {
           audio_url: string
+          category: string | null
           cover_image_url: string | null
           created_at: string | null
           id: string
@@ -20,6 +21,7 @@ export type Database = {
         }
         Insert: {
           audio_url: string
+          category?: string | null
           cover_image_url?: string | null
           created_at?: string | null
           id?: string
@@ -28,6 +30,7 @@ export type Database = {
         }
         Update: {
           audio_url?: string
+          category?: string | null
           cover_image_url?: string | null
           created_at?: string | null
           id?: string
