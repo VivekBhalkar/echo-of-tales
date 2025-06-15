@@ -1,9 +1,10 @@
+
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Home, Music, Podcast, FileAudio } from "lucide-react";
+import { Link } from "react-router-dom";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
-import AudioStoryUpload from "@/components/AudioStoryUpload";
+import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import { Home, Music, Podcast, FileAudio } from "lucide-react";
 
 const FILTERS = [
   { id: "all", label: "All", icon: Home },
@@ -15,48 +16,14 @@ const FILTERS = [
 export default function HomePage() {
   const [active, setActive] = useState("all");
   const [search, setSearch] = useState("");
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start w-full bg-background pb-10 relative">
-      {/* Top Nav Bar */}
-      <div className="w-full flex items-center justify-between sticky top-0 z-40 py-5 px-2 md:px-8 glass-card backdrop-blur-lg border border-glass-border shadow-lg bg-glass-bg/90">
-        {/* Home Icon */}
-        <button
-          className="icon-btn"
-          aria-label="Home"
-          onClick={() => window.location.href='/'}
-        >
-          <Home size={24} className="text-primary" />
-        </button>
-        
-        {/* Centered search bar */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex flex-1 justify-center w-full">
-          <input
-            type="text"
-            className="glass-input outline-none w-full max-w-[340px] mx-2 shadow text-base"
-            placeholder="Search stories, music, podcasts..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{
-              background: "rgba(48,54,76,0.96)",
-            }}
-          />
-        </div>
-
-        {/* Add button at the right end */}
-        <Button
-          asChild
-          className="ml-auto w-24 min-w-[96px] h-11 text-base md:text-lg font-semibold rounded-xl flex items-center justify-center"
-          title="Go to upload"
-          variant="default"
-        >
-          <Link to="/stories">Add</Link>
-        </Button>
-      </div>
+      {/* Consistent Navbar */}
+      <Navbar />
 
       {/* Filters as smooth tabs */}
-      <div className="flex items-center justify-center gap-3 mt-11 mb-9 w-full max-w-lg">
+      <div className="flex items-center justify-center gap-3 mt-16 mb-9 w-full max-w-lg">
         {FILTERS.map(filter => (
           <button
             key={filter.id}
@@ -73,6 +40,28 @@ export default function HomePage() {
             {filter.label}
           </button>
         ))}
+      </div>
+
+      {/* Search bar centered below Navbar */}
+      <div className="flex justify-center w-full mb-4">
+        <input
+          type="text"
+          className="glass-input outline-none w-full max-w-[340px] mx-2 shadow text-base"
+          placeholder="Search stories, music, podcasts..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{
+            background: "rgba(48,54,76,0.96)",
+          }}
+        />
+        <Button
+          asChild
+          className="ml-4 w-24 min-w-[96px] h-11 text-base md:text-lg font-semibold rounded-xl flex items-center justify-center"
+          title="Go to upload"
+          variant="default"
+        >
+          <Link to="/stories">Add</Link>
+        </Button>
       </div>
 
       {/* Stories section */}
