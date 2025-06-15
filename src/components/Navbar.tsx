@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,15 +36,17 @@ export default function Navbar() {
             <Home size={22} className="text-primary" />
           </Link>
         </Button>
-        <Link
-          to="/stories"
-          className="text-2xl font-neon font-bold tracking-wide neon-text drop-shadow-lg"
-          style={{
-            textShadow:
-              "0 0 6px #00ff99, 0 0 12px #00ff99, 0 0 24px #00ff99"
-          }}
-        >
-          AudioStory
+        {/* Logo Image - replaces text */}
+        <Link to="/stories" className="flex items-center select-none" style={{ minHeight: 40 }}>
+          <img
+            src="/lovable-uploads/1d104bc9-dd41-40e5-9f02-6d09d043d69e.png"
+            alt="AudioStory Logo"
+            className="h-10 w-auto max-w-[40px] rounded-xl shadow-lg bg-black"
+            style={{
+              objectFit: "contain",
+              boxShadow: "0 0 16px #00ff99a0",
+            }}
+          />
         </Link>
       </div>
       <div className="flex gap-4 items-center">
