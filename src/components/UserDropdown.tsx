@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User as UserIcon } from "lucide-react";
@@ -24,6 +23,9 @@ export default function UserDropdown() {
 
   // Dropdown position state
   const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
+
+  // this margin ensures the dropdown is always at least 0.5cm (~19px) away from browser edges
+  const SCREEN_MARGIN = 19; // 0.5cm ~= 18.9px
 
   useEffect(() => {
     const getUserAndProfile = async () => {
@@ -57,7 +59,7 @@ export default function UserDropdown() {
     return () => window.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  // Ensure dropdown never goes outside screen
+  // Updated positioning logic to always keep 0.5cm margin from screen borders
   useLayoutEffect(() => {
     if (open && dropdownRef.current && menuRef.current) {
       const dropdown = dropdownRef.current;
@@ -66,29 +68,42 @@ export default function UserDropdown() {
       const buttonRect = button.getBoundingClientRect();
       const windowWidth = window.innerWidth;
 
-      // Calculate preferred right, and fallback to left if overflow
+      // Default style: dropdown appears below button, right-aligned
       let style: React.CSSProperties = {
-        top: button.offsetHeight + 8, // 8px margin
-        right: 0,
+        top: button.offsetHeight + 8,
         minWidth: 200,
+        right: 0,
       };
-      // If left edge overflow
-      if (buttonRect.left + dropdownRect.width > windowWidth - 8) {
-        // Drop left side aligned
-        style = {
-          ...style,
-          left: "auto",
-          right: 0,
-        };
-        // Agar fir bhi overflow hai, to shift to left additional
-        if (buttonRect.right - dropdownRect.width < 8) {
-          style = {
-            ...style,
-            right: "auto",
-            left: 8,
-          };
-        }
+
+      // Calculate the horizontal position for the dropdown
+      let leftPos = buttonRect.left;
+      let rightPos = windowWidth - (buttonRect.left + dropdownRect.width);
+
+      // By default, try to align with the button (right edge)
+      let left: number | "auto" = button.offsetLeft;
+      let right: number | "auto" = "auto";
+
+      // If dropdown overflows right
+      if (buttonRect.left + dropdownRect.width + SCREEN_MARGIN > windowWidth) {
+        left = windowWidth - dropdownRect.width - SCREEN_MARGIN;
+        if (left < SCREEN_MARGIN) left = SCREEN_MARGIN;
+        right = "auto";
+      } else if (buttonRect.left < SCREEN_MARGIN) {
+        // If dropdown overflows left
+        left = SCREEN_MARGIN;
+        right = "auto";
+      } else {
+        // Normal case
+        left = button.offsetLeft;
+        right = "auto";
       }
+
+      style = {
+        ...style,
+        left,
+        right,
+      };
+
       setDropdownStyles(style);
     }
   }, [open]);
@@ -127,9 +142,9 @@ export default function UserDropdown() {
           style={{
             position: "absolute",
             zIndex: 60,
-            background: "var(--card, #fff)",
+            background: "var(--card, #111827)", // slightly darker for contrast on dark backgrounds, but customize as needed
             borderRadius: "0.5rem",
-            border: "1px solid var(--border, #e5e7eb)",
+            border: "1px solid var(--border, #1e293b)",
             boxShadow: "0 0 24px 6px #2295ff77, 0 8px 28px #0002",
             minWidth: dropdownStyles.minWidth,
             top: dropdownStyles.top as number | undefined,
@@ -137,7 +152,6 @@ export default function UserDropdown() {
             right: dropdownStyles.right as number | string | undefined,
             padding: 16,
             marginTop: 0,
-            // Smooth animate
             animation: "fade-in 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
           className="z-[60] p-4 min-w-[200px] animate-fade-in"
