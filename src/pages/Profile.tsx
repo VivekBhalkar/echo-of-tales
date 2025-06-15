@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -216,13 +215,14 @@ export default function ProfilePage() {
           />
         </div>
       </div>
-      <div className="flex flex-col w-full items-center gap-2">
-        <label className="text-sm font-bold mb-0.5">Name:</label>
-        <div className="flex gap-2 w-full">
+      {/* Center the name field */}
+      <div className="flex flex-col w-full items-center gap-2 text-center">
+        <label className="text-sm font-bold mb-0.5 w-full text-center">Name:</label>
+        <div className="flex gap-2 w-full justify-center">
           <Input
             value={editName}
             onChange={e => setEditName(e.target.value)}
-            className="max-w-[160px] py-1.5 text-base flex-1"
+            className="max-w-[160px] py-1.5 text-base flex-1 text-center"
             placeholder="Your Name"
             disabled={saving}
           />
