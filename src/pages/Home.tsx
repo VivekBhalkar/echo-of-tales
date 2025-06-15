@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
+import ArtistProfilesList from "@/components/ArtistProfilesList";
 
 export default function HomePage() {
   const [active, setActive] = useState("all");
@@ -31,12 +31,12 @@ export default function HomePage() {
           {active === "all" && (
             <div className="mt-10">
               <div className="text-xl font-bold mb-3">Artists</div>
+              {/* Show real artist profiles */}
               <div
-                className="w-full min-h-[80px] rounded-lg border border-dashed border-primary/50 bg-muted/40 flex items-center justify-center text-muted-foreground"
+                className="w-full min-h-[80px] rounded-lg border border-dashed border-primary/50 bg-muted/40 px-3 py-2"
                 style={{ minHeight: 120 }}
               >
-                {/* Placeholder for artist profiles. Replace with real profiles list/component in the future */}
-                No artist profiles yet.
+                <ArtistProfilesList />
               </div>
             </div>
           )}
