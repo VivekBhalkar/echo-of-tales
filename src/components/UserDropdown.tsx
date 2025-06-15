@@ -59,7 +59,7 @@ export default function UserDropdown() {
     return () => window.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  // Updated positioning logic to always keep 0.5cm margin from screen borders
+  // Position the dropdown: centered under icon, but clamped 0-9px from edges
   useLayoutEffect(() => {
     if (open && dropdownRef.current && menuRef.current) {
       const dropdown = dropdownRef.current;
@@ -68,47 +68,25 @@ export default function UserDropdown() {
       const buttonRect = button.getBoundingClientRect();
       const windowWidth = window.innerWidth;
 
-      // Default: dropdown appears below button, right-aligned
-      let style: React.CSSProperties = {
+      // Center dropdown horizontally below user icon
+      let left =
+        buttonRect.left + buttonRect.width / 2 - dropdownRect.width / 2;
+      // Clamp left so dropdown stays within 0-9px margin of window
+      left = Math.max(SCREEN_MARGIN, left);
+      // If it would overflow right, clamp back in
+      if (left + dropdownRect.width > windowWidth - SCREEN_MARGIN) {
+        left = windowWidth - SCREEN_MARGIN - dropdownRect.width;
+      }
+      // Never allow negative left
+      left = Math.max(left, SCREEN_MARGIN);
+
+      setDropdownStyles({
+        position: "absolute",
         top: button.offsetHeight + 8,
         minWidth: 200,
-        right: 0,
-      };
-
-      // Calculate positions
-      // Try to align with button as default, but clamp position within 0–9px margin of screen
-      let left = button.offsetLeft;
-      let right: number | "auto" = "auto";
-
-      // Compute candidate left/right
-      const fitsRight = buttonRect.left + dropdownRect.width <= windowWidth;
-      const overflowRight = buttonRect.left + dropdownRect.width > windowWidth;
-      const overflowLeft = buttonRect.left < 0;
-
-      // When too far left, shift to 0px (flush), but no minus margin
-      if (buttonRect.left < SCREEN_MARGIN) {
-        left = 0;
-        right = "auto";
-      }
-      // When overflows right, clamp so right edge to 0 or SCREEN_MARGIN (never negative)
-      else if (buttonRect.left + dropdownRect.width > windowWidth - SCREEN_MARGIN) {
-        left = Math.max(windowWidth - dropdownRect.width, 0);
-        right = "auto";
-      }
-      // Fits: just align with button
-      else {
-        // If left > SCREEN_MARGIN, you could nudge dropdown in by margin, but we allow 0–9px as requested
-        left = button.offsetLeft;
-        right = "auto";
-      }
-
-      style = {
-        ...style,
-        left,
-        right,
-      };
-
-      setDropdownStyles(style);
+        left: left,
+        zIndex: 60,
+      });
     }
   }, [open]);
 
@@ -144,16 +122,11 @@ export default function UserDropdown() {
         <div
           ref={dropdownRef}
           style={{
-            position: "absolute",
-            zIndex: 60,
-            background: "var(--card, #111827)", // slightly darker for contrast on dark backgrounds, but customize as needed
+            ...dropdownStyles,
+            background: "var(--card, #111827)",
             borderRadius: "0.5rem",
             border: "1px solid var(--border, #1e293b)",
             boxShadow: "0 0 24px 6px #2295ff77, 0 8px 28px #0002",
-            minWidth: dropdownStyles.minWidth,
-            top: dropdownStyles.top as number | undefined,
-            left: dropdownStyles.left as number | string | undefined,
-            right: dropdownStyles.right as number | string | undefined,
             padding: 16,
             marginTop: 0,
             animation: "fade-in 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
