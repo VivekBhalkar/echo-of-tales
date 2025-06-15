@@ -21,9 +21,10 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col items-center justify-start w-full bg-background pb-10 relative">
       {/* Consistent Navbar */}
       <Navbar />
-
+      {/* Yeh spacer div hai! */}
+      <div className="w-full" style={{ height: 72 }} /> {/* height same as Navbar + shadow */}
       {/* Filters as smooth tabs */}
-      <div className="flex items-center justify-center gap-3 mt-16 mb-9 w-full max-w-lg">
+      <div className="flex items-center justify-center gap-3 mb-9 w-full max-w-lg">
         {FILTERS.map(filter => (
           <button
             key={filter.id}
