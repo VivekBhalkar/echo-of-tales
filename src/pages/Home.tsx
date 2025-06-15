@@ -26,6 +26,20 @@ export default function HomePage() {
       <div className="w-full flex justify-center">
         <div className="w-full max-w-2xl glass-card p-8 animate-fade-in">
           <AudioStoryFeed category={active} search={search} />
+
+          {/* Add artist section under the ALL section */}
+          {active === "all" && (
+            <div className="mt-10">
+              <div className="text-xl font-bold mb-3">Artists</div>
+              <div
+                className="w-full min-h-[80px] rounded-lg border border-dashed border-primary/50 bg-muted/40 flex items-center justify-center text-muted-foreground"
+                style={{ minHeight: 120 }}
+              >
+                {/* Placeholder for artist profiles. Replace with real profiles list/component in the future */}
+                No artist profiles yet.
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
