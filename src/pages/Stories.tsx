@@ -1,9 +1,9 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
 import AudioStoryUpload from "@/components/AudioStoryUpload";
 import Navbar from "@/components/Navbar";
+import StoriesHeroSection from "@/components/StoriesHeroSection";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function StoriesPage() {
@@ -30,7 +30,8 @@ export default function StoriesPage() {
   return (
     <div className="bg-background min-h-screen">
       <Navbar />
-      <div className="max-w-3xl mx-auto pt-8 px-2">
+      <StoriesHeroSection />
+      <div className="max-w-3xl mx-auto pt-2 px-2">
         {user && (
           <div className="mb-6 rounded-lg p-4 bg-card border border-primary/60">
             <AudioStoryUpload onUpload={() => setRefreshFeed(x => x + 1)} />
