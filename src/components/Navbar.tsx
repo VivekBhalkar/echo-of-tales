@@ -1,14 +1,15 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
 
-  // Keeps session updated in all tabs
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
@@ -20,12 +21,6 @@ export default function Navbar() {
     });
     return () => subscription.unsubscribe();
   }, []);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    navigate("/");
-  };
 
   return (
     <nav className="w-full fixed left-0 top-0 z-50 flex justify-between items-center px-6 py-3 bg-card shadow-sm border-b border-primary/60">
@@ -51,27 +46,15 @@ export default function Navbar() {
       </div>
       <div className="flex gap-4 items-center">
         {user ? (
-          <>
-            <span className="text-sm font-medium text-primary">{user.email}</span>
-            <Button
-              variant="outline"
-              onClick={signOut}
-              className="border-primary text-primary"
-              style={{ borderColor: "#2295ff", color: "#2295ff" }}
-            >
-              Logout
-            </Button>
-          </>
+          <UserMenu />
         ) : (
-          <>
-            <Button
-              asChild
-              variant="default"
-              className="font-neon"
-            >
-              <Link to="/auth">Login</Link>
-            </Button>
-          </>
+          <Button
+            asChild
+            variant="default"
+            className="font-neon"
+          >
+            <Link to="/auth">Login</Link>
+          </Button>
         )}
       </div>
     </nav>

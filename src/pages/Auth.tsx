@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"login"|"signup">("login");
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,6 @@ export default function AuthPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect if already logged in
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) navigate("/stories");
     });
@@ -24,24 +24,29 @@ export default function AuthPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+
     if (mode === "signup") {
-      // Always set redirect for magic link flows
+      // Add 'name' to user_metadata
       const { error } = await supabase.auth.signUp({
-        email, password,
-        options: { emailRedirectTo: `${window.location.origin}/` }
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { name }
+        }
       });
       if (!error) {
-        toast({title: "Check your email!", description: "A confirmation link was sent."});
+        toast({ title: "Check your email!", description: "A confirmation link was sent." });
       } else {
-        toast({ title: "Sign up error", description: error.message, variant: "destructive"});
+        toast({ title: "Sign up error", description: error.message, variant: "destructive" });
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (!error) {
-        toast({title: "Signed in!"});
+        toast({ title: "Signed in!" });
         navigate("/stories");
       } else {
-        toast({ title: "Login error", description: error.message, variant: "destructive"});
+        toast({ title: "Login error", description: error.message, variant: "destructive" });
       }
     }
     setLoading(false);
@@ -60,6 +65,17 @@ export default function AuthPage() {
           required
           disabled={loading}
         />
+        {mode === "signup" && (
+          <Input
+            placeholder="Your Name"
+            type="text"
+            value={name}
+            autoComplete="name"
+            onChange={e => setName(e.target.value)}
+            required
+            disabled={loading}
+          />
+        )}
         <Input
           placeholder="Password"
           type="password"
