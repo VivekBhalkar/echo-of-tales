@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Home, Plus, Music, Podcast, FileAudio } from "lucide-react";
+import { Home, Music, Podcast, FileAudio } from "lucide-react";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
 import AudioStoryUpload from "@/components/AudioStoryUpload";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ export default function HomePage() {
         >
           <Home size={24} className="text-primary" />
         </button>
-
+        
         {/* Centered search bar */}
         <div className="absolute left-1/2 -translate-x-1/2 flex flex-1 justify-center w-full">
           <input
@@ -43,6 +44,16 @@ export default function HomePage() {
             }}
           />
         </div>
+
+        {/* Add button at the right end */}
+        <Button
+          asChild
+          className="ml-auto"
+          title="Go to upload"
+          variant="default"
+        >
+          <Link to="/stories">Add</Link>
+        </Button>
       </div>
 
       {/* Filters as smooth tabs */}
