@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User as UserIcon } from "lucide-react";
@@ -24,8 +25,8 @@ export default function UserDropdown() {
   // Dropdown position state
   const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
 
-  // this margin ensures the dropdown is always at least 9px away from browser edges
-  const SCREEN_MARGIN = 9; // 0.5cm ~= 18.9px
+  // this is the minimal screen margin you'd like, e.g. 3px to 4px for a little gap
+  const SCREEN_MARGIN = 3;
 
   useEffect(() => {
     const getUserAndProfile = async () => {
@@ -59,7 +60,7 @@ export default function UserDropdown() {
     return () => window.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  // Position the dropdown: centered under icon, but clamped 0-9px from edges
+  // Position the dropdown: align left if near left, right if near right, else center below icon
   useLayoutEffect(() => {
     if (open && dropdownRef.current && menuRef.current) {
       const dropdown = dropdownRef.current;
@@ -68,17 +69,22 @@ export default function UserDropdown() {
       const buttonRect = button.getBoundingClientRect();
       const windowWidth = window.innerWidth;
 
-      // Center dropdown horizontally below user icon
-      let left =
-        buttonRect.left + buttonRect.width / 2 - dropdownRect.width / 2;
-      // Clamp left so dropdown stays within 0-9px margin of window
-      left = Math.max(SCREEN_MARGIN, left);
-      // If it would overflow right, clamp back in
-      if (left + dropdownRect.width > windowWidth - SCREEN_MARGIN) {
+      let left: number;
+
+      // 1. If button is very close to left edge, align dropdown with small margin (SCREEN_MARGIN)
+      if (buttonRect.left < SCREEN_MARGIN + 2) {
+        left = SCREEN_MARGIN;
+      }
+      // 2. If button/dropdown would overflow right, clamp to right border - margin
+      else if (buttonRect.left + dropdownRect.width > windowWidth - SCREEN_MARGIN) {
         left = windowWidth - SCREEN_MARGIN - dropdownRect.width;
       }
-      // Never allow negative left
-      left = Math.max(left, SCREEN_MARGIN);
+      // 3. Else: center dropdown below icon
+      else {
+        left = buttonRect.left + buttonRect.width / 2 - dropdownRect.width / 2;
+        // Ensure the result never goes out of bounds (just in case)
+        left = Math.max(SCREEN_MARGIN, Math.min(left, windowWidth - SCREEN_MARGIN - dropdownRect.width));
+      }
 
       setDropdownStyles({
         position: "absolute",
