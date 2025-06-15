@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Home, Music, Podcast, FileAudio } from "lucide-react";
@@ -48,7 +47,7 @@ export default function HomePage() {
         {/* Add button at the right end */}
         <Button
           asChild
-          className="ml-auto"
+          className="ml-auto w-24 min-w-[96px] h-11 text-base md:text-lg font-semibold rounded-xl flex items-center justify-center"
           title="Go to upload"
           variant="default"
         >
