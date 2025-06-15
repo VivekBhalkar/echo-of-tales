@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ function getInitials(name: string | null) {
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false); // avatar upload state
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<{
     id: string;
@@ -29,6 +30,7 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch user and profile data
   useEffect(() => {
@@ -80,13 +82,68 @@ export default function ProfilePage() {
     }
   };
 
-  // Remove file input for avatar upload
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
     navigate("/auth");
+  };
+
+  // Avatar upload logic
+  const onAvatarClick = () => {
+    if (uploading) return; // Don't allow new upload while uploading
+    if (fileInputRef.current) fileInputRef.current.value = ""; // Reset so user can reselect same file if needed
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file is .jpg (or .jpeg)
+    if (!file.type.match(/^image\/jpeg$/)) {
+      toast({ title: "Only .jpg images allowed", variant: "destructive" });
+      return;
+    }
+
+    if (!user) {
+      toast({ title: "Not authenticated", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    const filename = `${user.id}_${Date.now()}.jpg`;
+    try {
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .upload(filename, file, { upsert: true, contentType: "image/jpeg" });
+      if (error) throw error;
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filename);
+
+      const publicUrl = publicUrlData?.publicUrl;
+      if (!publicUrl) throw new Error("Could not get public URL for uploaded image.");
+
+      // Update profile.avatar_url
+      const { error: updateError, data: updatedProfile } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+        .eq("id", user.id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+      setProfile(updatedProfile);
+      toast({ title: "Profile photo updated!" });
+    } catch (err: any) {
+      toast({ title: "Failed to upload photo", description: err?.message || String(err), variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (loading) {
@@ -137,11 +194,27 @@ export default function ProfilePage() {
             )}
           </Avatar>
           {/* Plus symbol overlays bottom-right of avatar */}
-          <span className="absolute right-0 bottom-0 bg-primary text-primary-foreground rounded-full flex items-center justify-center w-8 h-8 border-2 border-background shadow-lg">
-            <Plus size={24} />
-          </span>
+          <button
+            type="button"
+            className="absolute right-0 bottom-0 bg-primary text-primary-foreground rounded-full flex items-center justify-center w-8 h-8 border-2 border-background shadow-lg disabled:opacity-60"
+            onClick={onAvatarClick}
+            aria-label={uploading ? "Uploading..." : "Upload new photo"}
+            disabled={uploading}
+            style={{ cursor: uploading ? "not-allowed" : "pointer" }}
+          >
+            {uploading
+              ? <Loader2 className="animate-spin" size={20} />
+              : <Plus size={24} />}
+          </button>
+          {/* Actual hidden file input */}
+          <input
+            type="file"
+            accept=".jpg,image/jpeg"
+            style={{ display: "none" }}
+            ref={fileInputRef}
+            onChange={handleAvatarChange}
+          />
         </div>
-        {/* Removed file input */}
       </div>
       <div className="flex flex-col w-full items-center gap-2">
         <label className="text-sm font-bold mb-0.5">Name:</label>
