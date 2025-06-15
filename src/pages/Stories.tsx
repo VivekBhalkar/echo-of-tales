@@ -31,8 +31,14 @@ export default function StoriesPage() {
     <div className="bg-background min-h-screen">
       <Navbar />
       <div className="max-w-3xl mx-auto pt-8 px-2">
-        {user && <AudioStoryUpload onUpload={() => setRefreshFeed(x => x+1)} />}
-        <AudioStoryFeed key={refreshFeed}/>
+        {user && (
+          <div className="mb-6 rounded-lg p-4 bg-card border border-primary/60">
+            <AudioStoryUpload onUpload={() => setRefreshFeed(x => x + 1)} />
+          </div>
+        )}
+        <div className="rounded-lg bg-card/80 border border-primary/50 shadow-neon">
+          <AudioStoryFeed key={refreshFeed} />
+        </div>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,17 +28,37 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center px-6 py-3 bg-card shadow-sm sticky top-0 z-40">
-      <Link to="/stories" className="text-2xl font-bold tracking-tight">AudioStory</Link>
+    <nav className="flex justify-between items-center px-6 py-3 bg-card shadow-sm sticky top-0 z-40 border-b border-primary/60">
+      <Link
+        to="/stories"
+        className="text-2xl font-neon font-bold tracking-wide neon-text drop-shadow-lg"
+        style={{
+          textShadow:
+            "0 0 6px #00ff99, 0 0 12px #00ff99, 0 0 24px #00ff99"
+        }}
+      >
+        AudioStory
+      </Link>
       <div className="flex gap-4 items-center">
         {user ? (
           <>
-            <span className="text-sm">{user.email}</span>
-            <Button variant="outline" onClick={signOut}>Logout</Button>
+            <span className="text-sm neon-text">{user.email}</span>
+            <Button
+              variant="outline"
+              onClick={signOut}
+              className="border-primary text-primary neon-text"
+              style={{ borderColor: "#00ff99", color: "#00ff99" }}
+            >
+              Logout
+            </Button>
           </>
         ) : (
           <>
-            <Button asChild variant="default">
+            <Button
+              asChild
+              variant="default"
+              className="btn-lighting shadow-neon font-neon"
+            >
               <Link to="/auth">Login</Link>
             </Button>
           </>
