@@ -64,7 +64,7 @@ export default function MusicPlayer({
   };
 
   if (variant === "mobile-modal") {
-    // Reference: curved UI, white background, centered controls, no card border
+    // Single seek/slider only for the player UI here.
     return (
       <div className="flex flex-col items-center w-full px-2 pt-2">
         {/* Cover with curved mask */}
@@ -97,12 +97,9 @@ export default function MusicPlayer({
           <div className="text-lg font-bold text-neutral-900 text-center mb-1">{title}</div>
           <div className="text-sm text-neutral-400 font-medium">{artist}</div>
         </div>
-        {/* Arc slider (fake arc line, actual slider hidden but track covers arc) */}
-        <div className="relative w-full flex flex-col items-center mt-8 mb-2">
-          <svg width="200" height="46" className="absolute left-1/2 -translate-x-1/2 top-2 pointer-events-none">
-            <path d="M 20 38 Q 100 8 180 38" stroke="#c7cdde" strokeWidth="6" fill="none" />
-          </svg>
-          <div className="relative z-10 w-5/6 mt-7">
+        {/* Seek bar / slider */}
+        <div className="w-full flex flex-col items-center mt-8 mb-2">
+          <div className="w-5/6">
             <Slider
               value={[progress]}
               min={0}
@@ -110,23 +107,12 @@ export default function MusicPlayer({
               step={1}
               onValueChange={handleSeek}
               className="bg-transparent"
-              style={{
-                background: "none",
-              }}
+              style={{ background: "none" }}
             />
-          </div>
-          <div
-            className="absolute left-10 top-7 z-20"
-            style={{
-              transform: `translateX(${(progress / (duration || 1)) * 135 || 0}px)`,
-              transition: "transform 0.16s",
-            }}
-          >
-            <div className="w-5 h-5 bg-black border-4 border-white rounded-full shadow-lg" />
           </div>
         </div>
         {/* Time and Controls */}
-        <div className="flex flex-col items-center w-full mt-4">
+        <div className="flex flex-col items-center w-full mt-2">
           <span className="mb-2 text-xs text-neutral-400 font-mono">{format(progress)}</span>
           <div className="flex items-center justify-center gap-8 mb-2">
             <button

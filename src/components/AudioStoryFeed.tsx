@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import AudioPlayerModal from "./AudioPlayerModal";
+// import AudioPlayerModal from "./AudioPlayerModal"; // No longer used here
 
-// Use the Supabase-generated row type for audio_stories, now with category!
 type AudioStoryRow = Database["public"]["Tables"]["audio_stories"]["Row"];
 
 interface AudioStoryFeedProps {
@@ -12,14 +12,10 @@ interface AudioStoryFeedProps {
   category?: string;
 }
 
-// Show only cover images, each in a small square, horizontally scrollable
 export default function AudioStoryFeed({ search = "", category = "all" }: AudioStoryFeedProps) {
   const [stories, setStories] = useState<AudioStoryRow[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Modal state for selected story
-  const [playerOpen, setPlayerOpen] = useState(false);
-  const [selectedStory, setSelectedStory] = useState<AudioStoryRow | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -55,10 +51,10 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
     sectionLabel = category.charAt(0).toUpperCase() + category.slice(1);
   }
 
-  // Click cover image to open player
+  // Click cover image to open story player page
   const handleSelect = (story: AudioStoryRow) => {
-    setSelectedStory(story);
-    setPlayerOpen(true);
+    if (!story.id) return;
+    navigate(`/stories/${story.id}`);
   };
 
   return (
@@ -75,60 +71,58 @@ export default function AudioStoryFeed({ search = "", category = "all" }: AudioS
       ) : (
         <div className="flex flex-row gap-4 w-full overflow-x-auto scrollbar-thin pb-2">
           {stories.map((story) => (
-            <button
-              key={story.id}
-              onClick={() => handleSelect(story)}
-              className="rounded-xl overflow-hidden bg-muted/60 flex-shrink-0 focus:outline-none hover-scale transition"
-              style={{
-                width: 96,
-                height: 96,
-                minWidth: 96,
-                minHeight: 96,
-                maxWidth: 96,
-                maxHeight: 96,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "2px solid rgba(120,255,189,0.18)",
-                boxShadow: "0 1.5px 10px 0 rgba(38,255,171,0.08)",
-                background: "#232B35",
-                cursor: "pointer"
-              }}
-              aria-label={story.title || "Story cover"}
-              tabIndex={0}
-            >
-              {story.cover_image_url ? (
-                <img
-                  src={story.cover_image_url}
-                  alt={story.title + " cover"}
-                  className="object-cover w-full h-full"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "12px"
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground bg-muted border border-dashed rounded-xl">
-                  No Image
-                </div>
-              )}
-            </button>
+            <div key={story.id} className="flex flex-col items-center min-w-[96px]">
+              <button
+                onClick={() => handleSelect(story)}
+                className="rounded-xl overflow-hidden bg-muted/60 flex-shrink-0 focus:outline-none hover-scale transition"
+                style={{
+                  width: 96,
+                  height: 96,
+                  minWidth: 96,
+                  minHeight: 96,
+                  maxWidth: 96,
+                  maxHeight: 96,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "2px solid rgba(120,255,189,0.18)",
+                  boxShadow: "0 1.5px 10px 0 rgba(38,255,171,0.08)",
+                  background: "#232B35",
+                  cursor: "pointer"
+                }}
+                aria-label={story.title || "Story cover"}
+                tabIndex={0}
+              >
+                {story.cover_image_url ? (
+                  <img
+                    src={story.cover_image_url}
+                    alt={story.title + " cover"}
+                    className="object-cover w-full h-full"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "12px"
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground bg-muted border border-dashed rounded-xl">
+                    No Image
+                  </div>
+                )}
+              </button>
+              <div
+                className="w-full text-xs text-center mt-1 text-neutral-200 font-medium truncate"
+                title={story.title || ""}
+                style={{ maxWidth: 96 }}
+              >
+                {story.title || ""}
+              </div>
+            </div>
           ))}
         </div>
       )}
-      {/* Audio player modal */}
-      {selectedStory && (
-        <AudioPlayerModal
-          open={playerOpen}
-          onClose={() => setPlayerOpen(false)}
-          audioUrl={selectedStory.audio_url || ""}
-          coverUrl={selectedStory.cover_image_url || ""}
-          title={selectedStory.title || ""}
-          artist={selectedStory.uploaded_by || ""}
-        />
-      )}
+      {/* Modal removed—navigation used instead */}
     </div>
   );
 }
