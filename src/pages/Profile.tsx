@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LogOut, User as UserIcon, Loader2, Plus } from "lucide-react";
+import { LogOut, User as UserIcon, Loader2, Plus, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -113,6 +113,18 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-md mx-auto mt-8 bg-card p-6 rounded-xl shadow flex flex-col items-center gap-6 border border-primary/10">
+      {/* Back button */}
+      <div className="w-full flex">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/home")}
+          className="mb-4"
+          aria-label="Back to home"
+        >
+          <ArrowLeft size={22} />
+        </Button>
+      </div>
       <div className="flex flex-col items-center gap-2 w-full">
         <div className="relative h-20 w-20 mb-1">
           <Avatar className="h-20 w-20 ring-2 ring-primary">
