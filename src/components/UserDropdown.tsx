@@ -85,12 +85,13 @@ export default function UserDropdown() {
         left = Math.max(SCREEN_MARGIN, Math.min(left, windowWidth - SCREEN_MARGIN - dropdownRect.width));
       }
 
+      // Move the dropdown 2px further down and 10px to the left from its computed position
       setDropdownStyles({
         position: "absolute",
-        top: button.offsetHeight + 10,
+        top: button.offsetHeight + 12, // previously was +10, now +12 (2px lower)
         minWidth: 200,
-        left: left,
-        zIndex: 60,
+        left: left - 10, // move 10px to the left
+        zIndex: 9999, // much higher z-index to ensure popup on top
       });
     }
   }, [open]);
