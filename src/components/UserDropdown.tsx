@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User as UserIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,10 @@ export default function UserDropdown() {
   const [profile, setProfile] = useState<{ name: string | null; email: string | null } | null>(null);
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Dropdown position state
+  const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
 
   useEffect(() => {
     const getUserAndProfile = async () => {
@@ -53,6 +57,42 @@ export default function UserDropdown() {
     return () => window.removeEventListener("mousedown", handleClick);
   }, [open]);
 
+  // Ensure dropdown never goes outside screen
+  useLayoutEffect(() => {
+    if (open && dropdownRef.current && menuRef.current) {
+      const dropdown = dropdownRef.current;
+      const button = menuRef.current;
+      const dropdownRect = dropdown.getBoundingClientRect();
+      const buttonRect = button.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+
+      // Calculate preferred right, and fallback to left if overflow
+      let style: React.CSSProperties = {
+        top: button.offsetHeight + 8, // 8px margin
+        right: 0,
+        minWidth: 200,
+      };
+      // If left edge overflow
+      if (buttonRect.left + dropdownRect.width > windowWidth - 8) {
+        // Drop left side aligned
+        style = {
+          ...style,
+          left: "auto",
+          right: 0,
+        };
+        // Agar fir bhi overflow hai, to shift to left additional
+        if (buttonRect.right - dropdownRect.width < 8) {
+          style = {
+            ...style,
+            right: "auto",
+            left: 8,
+          };
+        }
+      }
+      setDropdownStyles(style);
+    }
+  }, [open]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setOpen(false);
@@ -68,6 +108,12 @@ export default function UserDropdown() {
         aria-label="Open user menu"
         className="rounded-full flex items-center justify-center w-10 h-10 bg-muted hover:bg-accent transition"
         onClick={() => setOpen((prev) => !prev)}
+        style={{
+          boxShadow: open
+            ? "0 0 14px 3px #2295ff88, 0 2px 8px #0002"
+            : undefined,
+          transition: "box-shadow 0.2s",
+        }}
       >
         <Avatar className="h-9 w-9">
           <AvatarFallback>
@@ -76,7 +122,26 @@ export default function UserDropdown() {
         </Avatar>
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-60 rounded-md bg-card border border-border shadow-lg z-50 p-4 min-w-[200px]">
+        <div
+          ref={dropdownRef}
+          style={{
+            position: "absolute",
+            zIndex: 60,
+            background: "var(--card, #fff)",
+            borderRadius: "0.5rem",
+            border: "1px solid var(--border, #e5e7eb)",
+            boxShadow: "0 0 24px 6px #2295ff77, 0 8px 28px #0002",
+            minWidth: dropdownStyles.minWidth,
+            top: dropdownStyles.top as number | undefined,
+            left: dropdownStyles.left as number | string | undefined,
+            right: dropdownStyles.right as number | string | undefined,
+            padding: 16,
+            marginTop: 0,
+            // Smooth animate
+            animation: "fade-in 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+          className="z-[60] p-4 min-w-[200px] animate-fade-in"
+        >
           <div className="flex flex-col items-center gap-2 pb-2 border-b border-border mb-2">
             <Avatar className="h-12 w-12 mb-1 ring-1 ring-primary">
               <AvatarFallback className="text-xl">{getInitials(profile.name)}</AvatarFallback>
