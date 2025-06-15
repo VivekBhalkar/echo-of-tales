@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -29,16 +29,23 @@ export default function Navbar() {
 
   return (
     <nav className="flex justify-between items-center px-6 py-3 bg-card shadow-sm sticky top-0 z-40 border-b border-primary/60">
-      <Link
-        to="/stories"
-        className="text-2xl font-neon font-bold tracking-wide neon-text drop-shadow-lg"
-        style={{
-          textShadow:
-            "0 0 6px #00ff99, 0 0 12px #00ff99, 0 0 24px #00ff99"
-        }}
-      >
-        AudioStory
-      </Link>
+      <div className="flex items-center gap-3">
+        <Button asChild variant="ghost" size="icon" className="hover-scale">
+          <Link to="/home">
+            <Home size={22} className="text-primary" />
+          </Link>
+        </Button>
+        <Link
+          to="/stories"
+          className="text-2xl font-neon font-bold tracking-wide neon-text drop-shadow-lg"
+          style={{
+            textShadow:
+              "0 0 6px #00ff99, 0 0 12px #00ff99, 0 0 24px #00ff99"
+          }}
+        >
+          AudioStory
+        </Link>
+      </div>
       <div className="flex gap-4 items-center">
         {user ? (
           <>
