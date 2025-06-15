@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User as UserIcon } from "lucide-react";
@@ -88,7 +87,7 @@ export default function UserDropdown() {
 
       setDropdownStyles({
         position: "absolute",
-        top: button.offsetHeight + 8,
+        top: button.offsetHeight + 10,
         minWidth: 200,
         left: left,
         zIndex: 60,
