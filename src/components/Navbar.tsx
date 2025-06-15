@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
-import UserMenu from "@/components/UserMenu";
+import UserDropdown from "@/components/UserDropdown";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
@@ -24,13 +24,8 @@ export default function Navbar() {
 
   return (
     <nav className="w-full fixed left-0 top-0 z-50 flex justify-between items-center px-6 py-3 bg-card shadow-sm border-b border-primary/60">
-      <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon" className="hover-scale">
-          <Link to="/home">
-            <Home size={22} className="text-primary" />
-          </Link>
-        </Button>
-        {/* Logo Image - blue glow now */}
+      <div className="flex items-center gap-2">
+        {/* Logo first */}
         <Link to="/stories" className="flex items-center select-none" style={{ minHeight: 40 }}>
           <img
             src="/lovable-uploads/1d104bc9-dd41-40e5-9f02-6d09d043d69e.png"
@@ -42,11 +37,21 @@ export default function Navbar() {
             }}
           />
         </Link>
+        {/* Home Icon */}
+        <Button asChild variant="ghost" size="icon" className="hover-scale">
+          <Link to="/home">
+            <Home size={22} className="text-primary" />
+          </Link>
+        </Button>
+        {/* User icon next to logo and home */}
+        {user && (
+          <div className="ml-2">
+            <UserDropdown />
+          </div>
+        )}
       </div>
       <div className="flex gap-4 items-center">
-        {user ? (
-          <UserMenu />
-        ) : (
+        {!user && (
           <Button
             asChild
             variant="default"
