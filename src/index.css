@@ -1,8 +1,9 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Black & Green Lighting Theme Design System */
+/* Black & Blue Lighting Theme Design System */
 
 @layer base {
   :root {
@@ -11,7 +12,7 @@
     --card: 224 14% 15%;               
     --card-foreground: 220 20% 95%;
 
-    --primary: 220 90% 56%;            
+    --primary: 217 91% 60%;         /* blue-500, not green */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 8% 22%;
@@ -20,12 +21,12 @@
     --muted: 220 9% 26%;
     --muted-foreground: 220 8% 65%;
 
-    --accent: 220 10% 35%;
+    --accent: 222 83% 69%;          /* blue accent */
     --accent-foreground: 220 20% 95%;
 
     --border: 220 8% 30%;
     --input: 223 14% 17%;
-    --ring: 220 90% 56%;
+    --ring: 217 91% 60%;
 
     --radius: 1rem;
 
@@ -33,48 +34,41 @@
     --glass-border: rgba(60,70,90,0.33);
     --shadow-glass: 0 8px 32px 0 rgba(9,14,21,0.31);
     --glass-blur: blur(18px);
-
-    /* REMOVED: --lighting-glow */
-    /* REMOVED: --lighting-green, --lighting-green-soft */
   }
 
   .dark {
     --background: 225 20% 5%;
-    --foreground: 136 100% 80%;
-
+    --foreground: 212 100% 85%;    /* blue-ish text in dark mode */
     --card: 225 16% 10%;
-    --card-foreground: 136 100% 80%;
+    --card-foreground: 212 100% 85%;
 
     --popover: 225 16% 10%;
-    --popover-foreground: 136 100% 80%;
+    --popover-foreground: 212 100% 85%;
 
-    --primary: 136 100% 54%;
+    --primary: 217 91% 70%;
     --primary-foreground: 225 20% 10%;
 
     --secondary: 225 16% 16%;
-    --secondary-foreground: 136 100% 80%;
+    --secondary-foreground: 212 100% 85%;
 
     --muted: 225 16% 13%;
-    --muted-foreground: 136 90% 66%;
+    --muted-foreground: 212 90% 72%;
 
-    --accent: 136 100% 54%;
+    --accent: 222 83% 70%;
     --accent-foreground: 225 20% 5%;
 
     --destructive: 0 62% 30%;
-    --destructive-foreground: 136 100% 80%;
+    --destructive-foreground: 212 100% 85%;
 
-    --border: 136 100% 34%;
+    --border: 217 91% 66%;
     --input: 225 16% 14%;
-    --ring: 136 100% 54%;
+    --ring: 217 91% 70%;
 
     --sidebar-background: 225 20% 7%;
-    --sidebar-foreground: 136 100% 80%;
-
-    /* REMOVED: --lighting-green, --lighting-green-soft, --lighting-glow */
+    --sidebar-foreground: 212 100% 85%;
   }
 }
 
-/* Minimal Glassmorphism Card */
 @layer utilities {
   .glass-card {
     background: var(--glass-bg);
@@ -105,7 +99,7 @@
     background: rgba(37,41,57,0.80);
     border-color: var(--primary);
     color: var(--primary);
-    box-shadow: 0 0 16px 0 var(--primary), 0 1.5px 7px 0 rgba(90,120,255,0.11);
+    box-shadow: 0 0 16px 0 var(--primary), 0 1.5px 7px 0 rgba(60,120,255,0.13);
   }
   .tab-btn:not(.active):hover {
     border-color: var(--primary);
@@ -163,3 +157,4 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;             /* Chrome, Safari, Opera */
 }
+
