@@ -105,9 +105,13 @@ export default function ArtistProfilesList({ selectedArtistId, onSelectArtist }:
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-      <style jsx>{`
-        div::-webkit-scrollbar {
+    <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+      <style>{`
+        .scrollbar-hide {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
       `}</style>
