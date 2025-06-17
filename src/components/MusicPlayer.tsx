@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
@@ -54,7 +55,7 @@ export default function MusicPlayer({
   const [trackIndex, setTrackIndex] = useState<number>(initialTrackIndex);
 
   // What track do we play? Support old props or playlist
-  const currentTrack = playlist
+  const activeTrack = playlist
     ? playlist[trackIndex] ?? {
         audioUrl: "",
         coverUrl: "",
@@ -76,7 +77,7 @@ export default function MusicPlayer({
       audioRef.current.load();
       setLocalIsPlaying(false); // auto-pause on track change
     }
-  }, [currentTrack.audioUrl]);
+  }, [activeTrack.audioUrl]);
 
   // For local playback (when not using global player)
   const handleLocalToggle = () => {
@@ -165,8 +166,8 @@ export default function MusicPlayer({
         <div className="relative w-full flex justify-center">
           <div className="w-48 h-60 md:w-56 md:h-68 relative overflow-hidden">
             <img
-              src={currentTrack.coverUrl}
-              alt={currentTrack.title + " cover"}
+              src={activeTrack.coverUrl}
+              alt={activeTrack.title + " cover"}
               className="w-full h-full object-cover"
               style={{
                 borderTopLeftRadius: 22,
@@ -188,8 +189,8 @@ export default function MusicPlayer({
         </div>
         {/* Title and Artist */}
         <div className="mt-5 w-full flex flex-col items-center">
-          <div className="text-lg font-bold text-white text-center mb-1">{currentTrack.title}</div>
-          <div className="text-sm text-neutral-400 font-medium">{currentTrack.artist}</div>
+          <div className="text-lg font-bold text-white text-center mb-1">{activeTrack.title}</div>
+          <div className="text-sm text-neutral-400 font-medium">{activeTrack.artist}</div>
         </div>
         {/* Seek bar / slider */}
         <div className="w-full flex flex-col items-center mt-8 mb-2">
@@ -252,7 +253,7 @@ export default function MusicPlayer({
         </div>
         <audio
           ref={audioRef}
-          src={currentTrack.audioUrl}
+          src={activeTrack.audioUrl}
           onTimeUpdate={onTimeUpdate}
           onLoadedMetadata={onLoadedMetadata}
           onPlay={() => setLocalIsPlaying(true)}
@@ -266,9 +267,9 @@ export default function MusicPlayer({
   // Desktop (default): similar replacement
   return (
     <div className="flex flex-col items-center">
-      <img src={currentTrack.coverUrl} alt={currentTrack.title + " cover"} className="w-48 h-48 object-cover rounded-md" />
-      <h2 className="mt-4 text-lg font-semibold text-white">{currentTrack.title}</h2>
-      <p className="text-sm text-gray-500">{currentTrack.artist}</p>
+      <img src={activeTrack.coverUrl} alt={activeTrack.title + " cover"} className="w-48 h-48 object-cover rounded-md" />
+      <h2 className="mt-4 text-lg font-semibold text-white">{activeTrack.title}</h2>
+      <p className="text-sm text-gray-500">{activeTrack.artist}</p>
       <div className="flex items-center mt-4">
         {hasPlaylist ? (
           <button
@@ -309,7 +310,7 @@ export default function MusicPlayer({
       />
       <audio
         ref={audioRef}
-        src={currentTrack.audioUrl}
+        src={activeTrack.audioUrl}
         onTimeUpdate={onTimeUpdate}
         onLoadedMetadata={onLoadedMetadata}
         onPlay={() => setLocalIsPlaying(true)}
