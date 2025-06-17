@@ -6,6 +6,7 @@ import HeroSection from "@/components/HeroSection";
 import ArtistProfilesList from "@/components/ArtistProfilesList";
 import { supabase } from "@/integrations/supabase/client";
 import { Play, Clock } from "lucide-react";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 
 // Enhanced SongCard component for better playlist-like appearance
 function SongCard({ 
@@ -69,6 +70,7 @@ export default function HomePage() {
   const [artistSongs, setArtistSongs] = useState<any[]>([]);
   const [songsLoading, setSongsLoading] = useState(false);
   const [selectedArtistName, setSelectedArtistName] = useState<string>("");
+  const { playTrack } = useAudioPlayer();
 
   // Fetch songs for the selected artist
   useEffect(() => {
@@ -111,11 +113,28 @@ export default function HomePage() {
 
   const handleSongPlay = (song: any) => {
     console.log("Playing song:", song);
-    // You can implement audio player functionality here
+    const track = {
+      id: song.id,
+      audioUrl: song.audio_url || "",
+      coverUrl: song.cover_image_url || "",
+      title: song.title || "",
+      artist: selectedArtistName,
+    };
+    
+    // Create playlist from all artist songs
+    const playlist = artistSongs.map(s => ({
+      id: s.id,
+      audioUrl: s.audio_url || "",
+      coverUrl: s.cover_image_url || "",
+      title: s.title || "",
+      artist: selectedArtistName,
+    }));
+    
+    playTrack(track, playlist);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start w-full bg-background pb-10 relative">
+    <div className="min-h-screen flex flex-col items-center justify-start w-full bg-background pb-20 relative">
       <Navbar />
       <div className="w-full" style={{ height: 72 }} />
       <HeroSection

@@ -1,7 +1,7 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 
 interface Track {
   audioUrl: string;
@@ -29,6 +29,27 @@ export default function MusicPlayer({
   initialTrackIndex = 0,
   variant = "default",
 }: MusicPlayerProps) {
+  const { playTrack, currentTrack, isPlaying, togglePlayPause } = useAudioPlayer();
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [localProgress, setLocalProgress] = useState(0);
+  const [localDuration, setLocalDuration] = useState(0);
+  const [localIsPlaying, setLocalIsPlaying] = useState(false);
+
+  // Track for this player
+  const track = {
+    id: audioUrl, // Use audioUrl as unique ID
+    audioUrl,
+    coverUrl,
+    title,
+    artist,
+  };
+
+  // Check if this is the currently playing track
+  const isCurrentTrack = currentTrack?.audioUrl === audioUrl;
+
+  // Use global state if this is the current track, otherwise use local state
+  const effectiveIsPlaying = isCurrentTrack ? isPlaying : localIsPlaying;
+
   // State for playlist track index
   const [trackIndex, setTrackIndex] = useState<number>(initialTrackIndex);
 
@@ -47,37 +68,54 @@ export default function MusicPlayer({
         artist,
       };
 
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-
   // When track changes, reset progress/duration
   useEffect(() => {
-    setProgress(0);
-    setDuration(0);
+    setLocalProgress(0);
+    setLocalDuration(0);
     if (audioRef.current) {
       audioRef.current.load();
-      setIsPlaying(false); // auto-pause on track change
+      setLocalIsPlaying(false); // auto-pause on track change
     }
   }, [currentTrack.audioUrl]);
 
-  // Play/pause toggle
-  const handleToggle = () => {
+  // For local playback (when not using global player)
+  const handleLocalToggle = () => {
     if (!audioRef.current) return;
-    if (isPlaying) {
+    if (localIsPlaying) {
       audioRef.current.pause();
     } else {
       audioRef.current.play();
     }
-    setIsPlaying((p) => !p);
+    setLocalIsPlaying(!localIsPlaying);
+  };
+
+  // Handle play button - use global player for mobile variant
+  const handleToggle = () => {
+    if (variant === "mobile-modal") {
+      // Use global player for mobile variant
+      const playlistTracks = playlist?.map((p, index) => ({
+        id: p.audioUrl + index,
+        audioUrl: p.audioUrl,
+        coverUrl: p.coverUrl,
+        title: p.title,
+        artist: p.artist,
+      })) || [track];
+      
+      playTrack(track, playlistTracks);
+      if (isCurrentTrack && isPlaying) {
+        togglePlayPause();
+      }
+    } else {
+      // Use local player for default variant
+      handleLocalToggle();
+    }
   };
 
   // Seek when slider moves
   const handleSeek = (val: number[]) => {
     if (!audioRef.current) return;
     audioRef.current.currentTime = val[0];
-    setProgress(val[0]);
+    setLocalProgress(val[0]);
   };
 
   // Format time as mm:ss
@@ -94,13 +132,13 @@ export default function MusicPlayer({
   // Update progress from audio tag
   const onTimeUpdate = () => {
     if (!audioRef.current) return;
-    setProgress(audioRef.current.currentTime);
+    setLocalProgress(audioRef.current.currentTime);
   };
 
   // On load, set duration
   const onLoadedMetadata = () => {
     if (!audioRef.current) return;
-    setDuration(audioRef.current.duration);
+    setLocalDuration(audioRef.current.duration);
   };
 
   // Next/Previous song navigation (playlist mode)
@@ -150,16 +188,16 @@ export default function MusicPlayer({
         </div>
         {/* Title and Artist */}
         <div className="mt-5 w-full flex flex-col items-center">
-          <div className="text-lg font-bold text-neutral-900 text-center mb-1">{currentTrack.title}</div>
+          <div className="text-lg font-bold text-white text-center mb-1">{currentTrack.title}</div>
           <div className="text-sm text-neutral-400 font-medium">{currentTrack.artist}</div>
         </div>
         {/* Seek bar / slider */}
         <div className="w-full flex flex-col items-center mt-8 mb-2">
           <div className="w-5/6">
             <Slider
-              value={[progress]}
+              value={[localProgress]}
               min={0}
-              max={duration || 1}
+              max={localDuration || 1}
               step={1}
               onValueChange={handleSeek}
               className="bg-transparent"
@@ -169,7 +207,7 @@ export default function MusicPlayer({
         </div>
         {/* Time and Controls */}
         <div className="flex flex-col items-center w-full mt-2">
-          <span className="mb-2 text-xs text-neutral-400 font-mono">{format(progress)}</span>
+          <span className="mb-2 text-xs text-neutral-400 font-mono">{format(localProgress)}</span>
           <div className="flex items-end justify-center gap-8 mb-2">
             <div className="flex flex-col items-center">
               {hasPlaylist ? (
@@ -184,7 +222,7 @@ export default function MusicPlayer({
               ) : null}
             </div>
             <button
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={effectiveIsPlaying ? "Pause" : "Play"}
               className="rounded-full bg-black shadow-inner p-4 mx-2 transition-transform hover:scale-110"
               style={{
                 boxShadow:
@@ -192,7 +230,7 @@ export default function MusicPlayer({
               }}
               onClick={handleToggle}
             >
-              {isPlaying ? (
+              {effectiveIsPlaying && isCurrentTrack ? (
                 <Pause size={32} className="text-white" />
               ) : (
                 <Play size={32} className="text-white" />
@@ -217,8 +255,8 @@ export default function MusicPlayer({
           src={currentTrack.audioUrl}
           onTimeUpdate={onTimeUpdate}
           onLoadedMetadata={onLoadedMetadata}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
+          onPlay={() => setLocalIsPlaying(true)}
+          onPause={() => setLocalIsPlaying(false)}
           className="hidden"
         />
       </div>
@@ -229,7 +267,7 @@ export default function MusicPlayer({
   return (
     <div className="flex flex-col items-center">
       <img src={currentTrack.coverUrl} alt={currentTrack.title + " cover"} className="w-48 h-48 object-cover rounded-md" />
-      <h2 className="mt-4 text-lg font-semibold">{currentTrack.title}</h2>
+      <h2 className="mt-4 text-lg font-semibold text-white">{currentTrack.title}</h2>
       <p className="text-sm text-gray-500">{currentTrack.artist}</p>
       <div className="flex items-center mt-4">
         {hasPlaylist ? (
@@ -245,7 +283,7 @@ export default function MusicPlayer({
           onClick={handleToggle}
           className="mx-4 px-6 py-3 bg-blue-500 text-white rounded-full focus:outline-none"
         >
-          {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+          {effectiveIsPlaying ? <Pause size={24} /> : <Play size={24} />}
         </button>
         {hasPlaylist ? (
           <button
@@ -260,12 +298,12 @@ export default function MusicPlayer({
       <input
         type="range"
         min="0"
-        max={duration}
-        value={progress}
+        max={localDuration}
+        value={localProgress}
         onChange={(e) => {
           if (!audioRef.current) return;
           audioRef.current.currentTime = parseInt(e.target.value);
-          setProgress(parseInt(e.target.value));
+          setLocalProgress(parseInt(e.target.value));
         }}
         className="w-full mt-4"
       />
@@ -274,8 +312,8 @@ export default function MusicPlayer({
         src={currentTrack.audioUrl}
         onTimeUpdate={onTimeUpdate}
         onLoadedMetadata={onLoadedMetadata}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        onPlay={() => setLocalIsPlaying(true)}
+        onPause={() => setLocalIsPlaying(false)}
         className="hidden"
       />
     </div>
