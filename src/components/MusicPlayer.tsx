@@ -256,18 +256,6 @@ export default function MusicPlayer({
             </div>
           </div>
         </div>
-        {/* Only render local audio for default variant */}
-        {variant === "default" && (
-          <audio
-            ref={audioRef}
-            src={activeTrack.audioUrl}
-            onTimeUpdate={onTimeUpdate}
-            onLoadedMetadata={onLoadedMetadata}
-            onPlay={() => setLocalIsPlaying(true)}
-            onPause={() => setLocalIsPlaying(false)}
-            className="hidden"
-          />
-        )}
       </div>
     );
   }
@@ -316,6 +304,7 @@ export default function MusicPlayer({
         }}
         className="w-full mt-4"
       />
+      {/* Only render local audio for default variant */}
       <audio
         ref={audioRef}
         src={activeTrack.audioUrl}
