@@ -30,7 +30,7 @@ export default function MusicPlayer({
   initialTrackIndex = 0,
   variant = "default",
 }: MusicPlayerProps) {
-  const { playTrack, currentTrack, isPlaying, togglePlayPause } = useAudioPlayer();
+  const { playTrack, currentTrack, isPlaying, togglePlayPause, progress, duration, seekTo } = useAudioPlayer();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [localProgress, setLocalProgress] = useState(0);
   const [localDuration, setLocalDuration] = useState(0);
@@ -47,9 +47,6 @@ export default function MusicPlayer({
 
   // Check if this is the currently playing track
   const isCurrentTrack = currentTrack?.audioUrl === audioUrl;
-
-  // Use global state if this is the current track, otherwise use local state
-  const effectiveIsPlaying = isCurrentTrack ? isPlaying : localIsPlaying;
 
   // State for playlist track index
   const [trackIndex, setTrackIndex] = useState<number>(initialTrackIndex);
@@ -69,15 +66,17 @@ export default function MusicPlayer({
         artist,
       };
 
-  // When track changes, reset progress/duration
+  // When track changes, reset progress/duration for local player only
   useEffect(() => {
-    setLocalProgress(0);
-    setLocalDuration(0);
-    if (audioRef.current) {
-      audioRef.current.load();
-      setLocalIsPlaying(false); // auto-pause on track change
+    if (variant === "default") {
+      setLocalProgress(0);
+      setLocalDuration(0);
+      if (audioRef.current) {
+        audioRef.current.load();
+        setLocalIsPlaying(false);
+      }
     }
-  }, [activeTrack.audioUrl]);
+  }, [activeTrack.audioUrl, variant]);
 
   // For local playback (when not using global player)
   const handleLocalToggle = () => {
@@ -103,9 +102,6 @@ export default function MusicPlayer({
       })) || [track];
       
       playTrack(track, playlistTracks);
-      if (isCurrentTrack && isPlaying) {
-        togglePlayPause();
-      }
     } else {
       // Use local player for default variant
       handleLocalToggle();
@@ -114,9 +110,13 @@ export default function MusicPlayer({
 
   // Seek when slider moves
   const handleSeek = (val: number[]) => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = val[0];
-    setLocalProgress(val[0]);
+    if (variant === "mobile-modal") {
+      seekTo(val[0]);
+    } else {
+      if (!audioRef.current) return;
+      audioRef.current.currentTime = val[0];
+      setLocalProgress(val[0]);
+    }
   };
 
   // Format time as mm:ss
@@ -130,15 +130,15 @@ export default function MusicPlayer({
     return `${m}:${sec}`;
   };
 
-  // Update progress from audio tag
+  // Update progress from audio tag (local player only)
   const onTimeUpdate = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || variant === "mobile-modal") return;
     setLocalProgress(audioRef.current.currentTime);
   };
 
-  // On load, set duration
+  // On load, set duration (local player only)
   const onLoadedMetadata = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || variant === "mobile-modal") return;
     setLocalDuration(audioRef.current.duration);
   };
 
@@ -157,6 +157,11 @@ export default function MusicPlayer({
     if (!hasPlaylist) return;
     setTrackIndex((i) => (i < playlist!.length - 1 ? i + 1 : i));
   };
+
+  // Use global state for mobile variant, local state for default
+  const effectiveIsPlaying = variant === "mobile-modal" && isCurrentTrack ? isPlaying : localIsPlaying;
+  const effectiveProgress = variant === "mobile-modal" && isCurrentTrack ? progress : localProgress;
+  const effectiveDuration = variant === "mobile-modal" && isCurrentTrack ? duration : localDuration;
 
   if (variant === "mobile-modal") {
     // Mobile UI: replace skip by prev/next track if playlist is given
@@ -196,9 +201,9 @@ export default function MusicPlayer({
         <div className="w-full flex flex-col items-center mt-8 mb-2">
           <div className="w-5/6">
             <Slider
-              value={[localProgress]}
+              value={[effectiveProgress]}
               min={0}
-              max={localDuration || 1}
+              max={effectiveDuration || 1}
               step={1}
               onValueChange={handleSeek}
               className="bg-transparent"
@@ -208,7 +213,7 @@ export default function MusicPlayer({
         </div>
         {/* Time and Controls */}
         <div className="flex flex-col items-center w-full mt-2">
-          <span className="mb-2 text-xs text-neutral-400 font-mono">{format(localProgress)}</span>
+          <span className="mb-2 text-xs text-neutral-400 font-mono">{format(effectiveProgress)}</span>
           <div className="flex items-end justify-center gap-8 mb-2">
             <div className="flex flex-col items-center">
               {hasPlaylist ? (
@@ -231,7 +236,7 @@ export default function MusicPlayer({
               }}
               onClick={handleToggle}
             >
-              {effectiveIsPlaying && isCurrentTrack ? (
+              {effectiveIsPlaying ? (
                 <Pause size={32} className="text-white" />
               ) : (
                 <Play size={32} className="text-white" />
@@ -251,15 +256,18 @@ export default function MusicPlayer({
             </div>
           </div>
         </div>
-        <audio
-          ref={audioRef}
-          src={activeTrack.audioUrl}
-          onTimeUpdate={onTimeUpdate}
-          onLoadedMetadata={onLoadedMetadata}
-          onPlay={() => setLocalIsPlaying(true)}
-          onPause={() => setLocalIsPlaying(false)}
-          className="hidden"
-        />
+        {/* Only render local audio for default variant */}
+        {variant === "default" && (
+          <audio
+            ref={audioRef}
+            src={activeTrack.audioUrl}
+            onTimeUpdate={onTimeUpdate}
+            onLoadedMetadata={onLoadedMetadata}
+            onPlay={() => setLocalIsPlaying(true)}
+            onPause={() => setLocalIsPlaying(false)}
+            className="hidden"
+          />
+        )}
       </div>
     );
   }
@@ -299,8 +307,8 @@ export default function MusicPlayer({
       <input
         type="range"
         min="0"
-        max={localDuration}
-        value={localProgress}
+        max={effectiveDuration}
+        value={effectiveProgress}
         onChange={(e) => {
           if (!audioRef.current) return;
           audioRef.current.currentTime = parseInt(e.target.value);
