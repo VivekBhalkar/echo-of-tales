@@ -26,7 +26,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",         // Blue primary (now)
+          DEFAULT: "hsl(var(--primary))",         // Amber primary (changed from blue)
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
@@ -73,6 +73,8 @@ export default {
         neon: ["'Orbitron'", "ui-sans-serif", "system-ui"],
       },
       boxShadow: {
+        "neon": "0 0 20px rgba(245,158,11,0.3), 0 0 40px rgba(245,158,11,0.1)",
+        "audio-glow": "0 0 30px rgba(245,158,11,0.4), 0 0 60px rgba(245,158,11,0.2)",
       },
       keyframes: {
         'accordion-down': {
@@ -105,4 +107,3 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-

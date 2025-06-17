@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import ArtistProfilesList from "@/components/ArtistProfilesList";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Clock } from "lucide-react";
+import { Play, Clock, Music, Headphones, Mic } from "lucide-react";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 
 // Enhanced SongCard component for better playlist-like appearance
@@ -144,15 +144,38 @@ export default function HomePage() {
         setSearch={setSearch}
       />
 
-      <div className="w-full flex justify-center">
-        <div className="w-full max-w-4xl glass-card p-8 animate-fade-in">
+      {/* Enhanced content section with better styling */}
+      <div className="w-full flex justify-center relative">
+        {/* Background pattern overlay */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-500/5 to-transparent"></div>
+        </div>
+        
+        <div className="w-full max-w-4xl glass-card p-8 animate-fade-in shadow-neon relative z-10">
+          {/* Content header with music theme */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-full bg-amber-500/20 audio-glow">
+              <Music className="text-amber-400" size={24} />
+            </div>
+            <h2 className="text-2xl font-bold text-amber-200">Latest Audio Content</h2>
+          </div>
+
           <AudioStoryFeed category={active} search={search} />
           
-          {/* Artists section only under the ALL section */}
+          {/* Artists section with enhanced design */}
           {active === "all" && (
-            <div className="mt-10">
-              <div className="text-xl font-bold mb-4">Artists</div>
-              <div className="w-full min-h-[120px] rounded-lg border border-dashed border-primary/50 bg-muted/40 px-4 py-4">
+            <div className="mt-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-full bg-amber-500/20 audio-glow">
+                  <Headphones className="text-amber-400" size={24} />
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-amber-200">Featured Artists</div>
+                  <p className="text-sm text-amber-100/70">Discover talented creators and their audio stories</p>
+                </div>
+              </div>
+              
+              <div className="w-full min-h-[120px] rounded-lg border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 backdrop-blur-sm px-6 py-6 shadow-neon">
                 <ArtistProfilesList
                   selectedArtistId={selectedArtistId}
                   onSelectArtist={setSelectedArtistId}
@@ -161,33 +184,42 @@ export default function HomePage() {
                 {/* Show songs by selected artist below */}
                 {selectedArtistId && (
                   <div className="mt-8">
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold">
-                        Songs by {selectedArtistName}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {artistSongs.length} {artistSongs.length === 1 ? 'song' : 'songs'}
-                      </p>
+                    <div className="mb-6 flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-amber-500/20 audio-glow">
+                        <Mic className="text-amber-400" size={20} />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-amber-200">
+                          Songs by {selectedArtistName}
+                        </h3>
+                        <p className="text-sm text-amber-100/70">
+                          {artistSongs.length} {artistSongs.length === 1 ? 'song' : 'songs'}
+                        </p>
+                      </div>
                     </div>
                     
                     {songsLoading ? (
-                      <div className="flex w-full justify-center py-8 text-muted-foreground">
-                        Loading songs...
+                      <div className="flex w-full justify-center py-8 text-amber-300">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+                          Loading songs...
+                        </div>
                       </div>
                     ) : artistSongs.length === 0 ? (
-                      <div className="flex w-full justify-center py-8 text-muted-foreground">
+                      <div className="flex w-full justify-center py-8 text-amber-300/70">
                         No songs uploaded yet.
                       </div>
                     ) : (
-                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                      <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
                         {artistSongs.map(song => (
-                          <SongCard
-                            key={song.id}
-                            title={song.title}
-                            cover_image_url={song.cover_image_url}
-                            created_at={song.created_at}
-                            onClick={() => handleSongPlay(song)}
-                          />
+                          <div key={song.id} className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300">
+                            <SongCard
+                              title={song.title}
+                              cover_image_url={song.cover_image_url}
+                              created_at={song.created_at}
+                              onClick={() => handleSongPlay(song)}
+                            />
+                          </div>
                         ))}
                       </div>
                     )}
@@ -196,6 +228,27 @@ export default function HomePage() {
               </div>
             </div>
           )}
+
+          {/* Additional content sections for better design */}
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-lg p-6 border border-amber-500/20 shadow-neon">
+              <Music className="text-amber-400 mb-3" size={32} />
+              <h3 className="text-lg font-semibold text-amber-200 mb-2">Music</h3>
+              <p className="text-sm text-amber-100/70">Discover amazing musical compositions from talented artists worldwide.</p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-lg p-6 border border-amber-500/20 shadow-neon">
+              <Headphones className="text-amber-400 mb-3" size={32} />
+              <h3 className="text-lg font-semibold text-amber-200 mb-2">Podcasts</h3>
+              <p className="text-sm text-amber-100/70">Listen to engaging conversations and educational content.</p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-lg p-6 border border-amber-500/20 shadow-neon">
+              <Mic className="text-amber-400 mb-3" size={32} />
+              <h3 className="text-lg font-semibold text-amber-200 mb-2">Stories</h3>
+              <p className="text-sm text-amber-100/70">Immerse yourself in captivating audio stories and narratives.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

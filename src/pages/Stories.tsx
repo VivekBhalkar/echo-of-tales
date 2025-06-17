@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AudioStoryFeed from "@/components/AudioStoryFeed";
@@ -28,17 +29,24 @@ export default function StoriesPage() {
   const [refreshFeed, setRefreshFeed] = useState(0);
 
   return (
-    <div className="bg-background min-h-screen">
-      <Navbar />
-      <StoriesHeroSection />
-      <div className="max-w-3xl mx-auto pt-2 px-2">
-        {user && (
-          <div className="mb-6 rounded-lg p-4 bg-card border border-primary/60">
-            <AudioStoryUpload onUpload={() => setRefreshFeed(x => x + 1)} />
+    <div className="bg-background min-h-screen relative">
+      {/* Background pattern overlay */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-500/5 to-transparent"></div>
+      </div>
+      
+      <div className="relative z-10">
+        <Navbar />
+        <StoriesHeroSection />
+        <div className="max-w-3xl mx-auto pt-6 px-4">
+          {user && (
+            <div className="mb-8 rounded-lg p-6 bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/30 shadow-neon backdrop-blur-sm">
+              <AudioStoryUpload onUpload={() => setRefreshFeed(x => x + 1)} />
+            </div>
+          )}
+          <div className="rounded-lg bg-gradient-to-br from-amber-500/5 to-orange-500/5 border border-amber-500/20 shadow-neon backdrop-blur-sm">
+            <AudioStoryFeed key={refreshFeed} />
           </div>
-        )}
-        <div className="rounded-lg bg-card/80 border border-primary/50 shadow-neon">
-          <AudioStoryFeed key={refreshFeed} />
         </div>
       </div>
     </div>

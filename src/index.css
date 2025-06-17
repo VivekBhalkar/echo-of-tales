@@ -3,16 +3,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Black & Blue Lighting Theme Design System */
+/* Orange & Amber Lighting Theme Design System */
 
 @layer base {
   :root {
     --background: 223 14% 10%;         
-    --foreground: 220 20% 95%;         
+    --foreground: 252 100% 95%;         
     --card: 224 14% 15%;               
-    --card-foreground: 220 20% 95%;
+    --card-foreground: 252 100% 95%;
 
-    --primary: 217 91% 60%;         /* blue-500, not green */
+    --primary: 45 93% 58%;         /* amber-500, changed from blue */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 8% 22%;
@@ -21,51 +21,51 @@
     --muted: 220 9% 26%;
     --muted-foreground: 220 8% 65%;
 
-    --accent: 222 83% 69%;          /* blue accent */
+    --accent: 42 87% 55%;          /* amber accent */
     --accent-foreground: 220 20% 95%;
 
-    --border: 220 8% 30%;
+    --border: 45 93% 58%;          /* amber border */
     --input: 223 14% 17%;
-    --ring: 217 91% 60%;
+    --ring: 45 93% 58%;           /* amber ring */
 
     --radius: 1rem;
 
     --glass-bg: rgba(23,27,39,0.60);
-    --glass-border: rgba(60,70,90,0.33);
-    --shadow-glass: 0 8px 32px 0 rgba(9,14,21,0.31);
+    --glass-border: rgba(251, 191, 36, 0.33); /* amber glass border */
+    --shadow-glass: 0 8px 32px 0 rgba(245,158,11,0.31); /* amber shadow */
     --glass-blur: blur(18px);
   }
 
   .dark {
     --background: 225 20% 5%;
-    --foreground: 212 100% 85%;    /* blue-ish text in dark mode */
+    --foreground: 45 100% 85%;    /* amber-ish text in dark mode */
     --card: 225 16% 10%;
-    --card-foreground: 212 100% 85%;
+    --card-foreground: 45 100% 85%;
 
     --popover: 225 16% 10%;
-    --popover-foreground: 212 100% 85%;
+    --popover-foreground: 45 100% 85%;
 
-    --primary: 217 91% 70%;
+    --primary: 45 93% 70%;        /* amber primary */
     --primary-foreground: 225 20% 10%;
 
     --secondary: 225 16% 16%;
-    --secondary-foreground: 212 100% 85%;
+    --secondary-foreground: 45 100% 85%;
 
     --muted: 225 16% 13%;
-    --muted-foreground: 212 90% 72%;
+    --muted-foreground: 45 90% 72%;
 
-    --accent: 222 83% 70%;
+    --accent: 42 87% 70%;         /* amber accent */
     --accent-foreground: 225 20% 5%;
 
     --destructive: 0 62% 30%;
-    --destructive-foreground: 212 100% 85%;
+    --destructive-foreground: 45 100% 85%;
 
-    --border: 217 91% 66%;
+    --border: 45 93% 66%;         /* amber border */
     --input: 225 16% 14%;
-    --ring: 217 91% 70%;
+    --ring: 45 93% 70%;          /* amber ring */
 
     --sidebar-background: 225 20% 7%;
-    --sidebar-foreground: 212 100% 85%;
+    --sidebar-foreground: 45 100% 85%;
   }
 }
 
@@ -99,7 +99,7 @@
     background: rgba(37,41,57,0.80);
     border-color: var(--primary);
     color: var(--primary);
-    box-shadow: 0 0 16px 0 var(--primary), 0 1.5px 7px 0 rgba(60,120,255,0.13);
+    box-shadow: 0 0 16px 0 var(--primary), 0 1.5px 7px 0 rgba(245,158,11,0.13); /* amber glow */
   }
   .tab-btn:not(.active):hover {
     border-color: var(--primary);
@@ -109,7 +109,7 @@
   .icon-btn {
     background: rgba(44,49,67,0.82);
     border-radius: 9999px;
-    box-shadow: 0 2px 8px 0 rgba(66,74,105,.12);
+    box-shadow: 0 2px 8px 0 rgba(245,158,11,.12); /* amber shadow */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -117,7 +117,7 @@
     transition: background 0.15s;
   }
   .icon-btn:hover {
-    background: rgba(80,90,135,0.3);
+    background: rgba(245,158,11,0.3); /* amber hover */
   }
   .glass-sheet {
     @apply glass-card p-7;
@@ -125,8 +125,14 @@
     max-width: 92vw;
   }
   .glass-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(62,80,120,0.3);
+    background: rgba(245,158,11,0.3); /* amber scrollbar */
     border-radius: 12px;
+  }
+  .shadow-neon {
+    box-shadow: 0 0 20px rgba(245,158,11,0.3), 0 0 40px rgba(245,158,11,0.1);
+  }
+  .audio-glow {
+    box-shadow: 0 0 30px rgba(245,158,11,0.4), 0 0 60px rgba(245,158,11,0.2);
   }
 }
 
@@ -139,14 +145,16 @@
 .logo-reflection img {
   display: block;
 }
-/* Removed the logo-reflection::after rule to remove the reflection */
 
 body {
   @apply bg-background text-foreground;
   font-family: 'Inter', 'Segoe UI', ui-sans-serif, system-ui;
   min-height: 100vh;
-  background: radial-gradient(at 61% 8%, #24407a 0, transparent 52%),
-              linear-gradient(120deg, #171B27 61%, #252D3A 100%);
+  background: 
+    url('/lovable-uploads/100c870b-a737-49cb-a975-1ec080560c2a.png') center/cover fixed,
+    radial-gradient(at 61% 8%, #b45309 0, transparent 52%),
+    linear-gradient(120deg, #171B27 61%, #2A1F0F 100%);
+  background-blend-mode: overlay, normal, normal;
 }
 
 /* Hide scrollbars for all browsers */
@@ -157,4 +165,3 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;             /* Chrome, Safari, Opera */
 }
-
