@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Orange & Amber Lighting Theme Design System */
+/* Enhanced Orange & Amber Audio Platform Theme */
 
 @layer base {
   :root {
@@ -12,7 +12,7 @@
     --card: 224 14% 15%;               
     --card-foreground: 252 100% 95%;
 
-    --primary: 45 93% 58%;         /* amber-500, changed from blue */
+    --primary: 45 93% 58%;         /* amber-500 */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 8% 22%;
@@ -133,6 +133,23 @@
   }
   .audio-glow {
     box-shadow: 0 0 30px rgba(245,158,11,0.4), 0 0 60px rgba(245,158,11,0.2);
+  }
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245,158,11,0.4) transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(245,158,11,0.4);
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(245,158,11,0.6);
   }
 }
 

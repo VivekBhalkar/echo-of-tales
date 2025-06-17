@@ -16,8 +16,8 @@ interface MusicPlayerProps {
   coverUrl: string;
   title: string;
   artist: string;
-  playlist?: Track[]; // optional new prop: playlist
-  initialTrackIndex?: number; // for playlist mode, optional
+  playlist?: Track[];
+  initialTrackIndex?: number;
   variant?: "default" | "mobile-modal";
 }
 
@@ -31,14 +31,10 @@ export default function MusicPlayer({
   variant = "default",
 }: MusicPlayerProps) {
   const { playTrack, currentTrack, isPlaying, togglePlayPause, progress, duration, seekTo } = useAudioPlayer();
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [localProgress, setLocalProgress] = useState(0);
-  const [localDuration, setLocalDuration] = useState(0);
-  const [localIsPlaying, setLocalIsPlaying] = useState(false);
 
   // Track for this player
   const track = {
-    id: audioUrl, // Use audioUrl as unique ID
+    id: audioUrl,
     audioUrl,
     coverUrl,
     title,
@@ -66,57 +62,28 @@ export default function MusicPlayer({
         artist,
       };
 
-  // When track changes, reset progress/duration for local player only
-  useEffect(() => {
-    if (variant === "default") {
-      setLocalProgress(0);
-      setLocalDuration(0);
-      if (audioRef.current) {
-        audioRef.current.load();
-        setLocalIsPlaying(false);
-      }
-    }
-  }, [activeTrack.audioUrl, variant]);
-
-  // For local playback (when not using global player)
-  const handleLocalToggle = () => {
-    if (!audioRef.current) return;
-    if (localIsPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setLocalIsPlaying(!localIsPlaying);
-  };
-
-  // Handle play button - use global player for mobile variant
+  // Handle play button - always use global player for synchronization
   const handleToggle = () => {
-    if (variant === "mobile-modal") {
-      // Use global player for mobile variant
-      const playlistTracks = playlist?.map((p, index) => ({
-        id: p.audioUrl + index,
-        audioUrl: p.audioUrl,
-        coverUrl: p.coverUrl,
-        title: p.title,
-        artist: p.artist,
-      })) || [track];
-      
-      playTrack(track, playlistTracks);
+    const playlistTracks = playlist?.map((p, index) => ({
+      id: p.audioUrl + index,
+      audioUrl: p.audioUrl,
+      coverUrl: p.coverUrl,
+      title: p.title,
+      artist: p.artist,
+    })) || [track];
+    
+    if (isCurrentTrack && currentTrack) {
+      // If this is the current track, just toggle play/pause
+      togglePlayPause();
     } else {
-      // Use local player for default variant
-      handleLocalToggle();
+      // If this is a different track, play it
+      playTrack(track, playlistTracks);
     }
   };
 
   // Seek when slider moves
   const handleSeek = (val: number[]) => {
-    if (variant === "mobile-modal") {
-      seekTo(val[0]);
-    } else {
-      if (!audioRef.current) return;
-      audioRef.current.currentTime = val[0];
-      setLocalProgress(val[0]);
-    }
+    seekTo(val[0]);
   };
 
   // Format time as mm:ss
@@ -128,18 +95,6 @@ export default function MusicPlayer({
       .toString()
       .padStart(2, "0");
     return `${m}:${sec}`;
-  };
-
-  // Update progress from audio tag (local player only)
-  const onTimeUpdate = () => {
-    if (!audioRef.current || variant === "mobile-modal") return;
-    setLocalProgress(audioRef.current.currentTime);
-  };
-
-  // On load, set duration (local player only)
-  const onLoadedMetadata = () => {
-    if (!audioRef.current || variant === "mobile-modal") return;
-    setLocalDuration(audioRef.current.duration);
   };
 
   // Next/Previous song navigation (playlist mode)
@@ -158,13 +113,12 @@ export default function MusicPlayer({
     setTrackIndex((i) => (i < playlist!.length - 1 ? i + 1 : i));
   };
 
-  // Use global state for mobile variant, local state for default
-  const effectiveIsPlaying = variant === "mobile-modal" && isCurrentTrack ? isPlaying : localIsPlaying;
-  const effectiveProgress = variant === "mobile-modal" && isCurrentTrack ? progress : localProgress;
-  const effectiveDuration = variant === "mobile-modal" && isCurrentTrack ? duration : localDuration;
+  // Use global state for consistent playback across all players
+  const effectiveIsPlaying = isCurrentTrack ? isPlaying : false;
+  const effectiveProgress = isCurrentTrack ? progress : 0;
+  const effectiveDuration = isCurrentTrack ? duration : 0;
 
   if (variant === "mobile-modal") {
-    // Mobile UI: replace skip by prev/next track if playlist is given
     return (
       <div className="flex flex-col items-center w-full px-2 pt-2">
         {/* Cover with curved mask */}
@@ -229,10 +183,10 @@ export default function MusicPlayer({
             </div>
             <button
               aria-label={effectiveIsPlaying ? "Pause" : "Play"}
-              className="rounded-full bg-black shadow-inner p-4 mx-2 transition-transform hover:scale-110"
+              className="rounded-full bg-amber-600 shadow-inner p-4 mx-2 transition-transform hover:scale-110 audio-glow"
               style={{
                 boxShadow:
-                  "0 2.5px 22px 0 rgba(0,0,0,0.14), 0 1px 14px 0 rgba(147,255,193,0.12)",
+                  "0 2.5px 22px 0 rgba(245,158,11,0.4), 0 1px 14px 0 rgba(245,158,11,0.2)",
               }}
               onClick={handleToggle}
             >
@@ -260,25 +214,25 @@ export default function MusicPlayer({
     );
   }
 
-  // Desktop (default): similar replacement
+  // Desktop (default): updated with amber theme
   return (
     <div className="flex flex-col items-center">
       <img src={activeTrack.coverUrl} alt={activeTrack.title + " cover"} className="w-48 h-48 object-cover rounded-md" />
       <h2 className="mt-4 text-lg font-semibold text-white">{activeTrack.title}</h2>
-      <p className="text-sm text-gray-500">{activeTrack.artist}</p>
+      <p className="text-sm text-amber-300">{activeTrack.artist}</p>
       <div className="flex items-center mt-4">
         {hasPlaylist ? (
           <button
             onClick={handlePrevSong}
             disabled={!canGoPrev}
-            className={`px-4 py-2 bg-gray-100 text-gray-700 rounded-full focus:outline-none ${!canGoPrev ? "opacity-50 cursor-default pointer-events-none" : ""}`}
+            className={`px-4 py-2 bg-amber-600 text-white rounded-full focus:outline-none hover:bg-amber-700 transition-colors ${!canGoPrev ? "opacity-50 cursor-default pointer-events-none" : ""}`}
           >
             <SkipBack size={20} />
           </button>
         ) : null}
         <button
           onClick={handleToggle}
-          className="mx-4 px-6 py-3 bg-blue-500 text-white rounded-full focus:outline-none"
+          className="mx-4 px-6 py-3 bg-amber-600 text-white rounded-full focus:outline-none hover:bg-amber-700 transition-colors audio-glow"
         >
           {effectiveIsPlaying ? <Pause size={24} /> : <Play size={24} />}
         </button>
@@ -286,7 +240,7 @@ export default function MusicPlayer({
           <button
             onClick={handleNextSong}
             disabled={!canGoNext}
-            className={`px-4 py-2 bg-gray-100 text-gray-700 rounded-full focus:outline-none ${!canGoNext ? "opacity-50 cursor-default pointer-events-none" : ""}`}
+            className={`px-4 py-2 bg-amber-600 text-white rounded-full focus:outline-none hover:bg-amber-700 transition-colors ${!canGoNext ? "opacity-50 cursor-default pointer-events-none" : ""}`}
           >
             <SkipForward size={20} />
           </button>
@@ -297,22 +251,8 @@ export default function MusicPlayer({
         min="0"
         max={effectiveDuration}
         value={effectiveProgress}
-        onChange={(e) => {
-          if (!audioRef.current) return;
-          audioRef.current.currentTime = parseInt(e.target.value);
-          setLocalProgress(parseInt(e.target.value));
-        }}
+        onChange={(e) => seekTo(parseInt(e.target.value))}
         className="w-full mt-4"
-      />
-      {/* Only render local audio for default variant */}
-      <audio
-        ref={audioRef}
-        src={activeTrack.audioUrl}
-        onTimeUpdate={onTimeUpdate}
-        onLoadedMetadata={onLoadedMetadata}
-        onPlay={() => setLocalIsPlaying(true)}
-        onPause={() => setLocalIsPlaying(false)}
-        className="hidden"
       />
     </div>
   );
