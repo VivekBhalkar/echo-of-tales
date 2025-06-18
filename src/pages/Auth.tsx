@@ -60,16 +60,8 @@ export default function AuthPage() {
         toast({ title: "Sign up error", description: error.message, variant: "destructive" });
       }
     } else {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (!error) {
-        // After login, update user_metadata name if needed
-        // Only if the name has changed or isn't set
-        if (data.user) {
-          const currentName = data.user.user_metadata?.name || "";
-          if (name && name !== currentName) {
-            await supabase.auth.updateUser({ data: { name } });
-          }
-        }
         toast({ title: "Signed in!" });
         navigate("/stories");
       } else {
@@ -92,15 +84,17 @@ export default function AuthPage() {
           required
           disabled={loading}
         />
-        <Input
-          placeholder="Your Name"
-          type="text"
-          value={name}
-          autoComplete="name"
-          onChange={e => setName(e.target.value)}
-          required
-          disabled={loading}
-        />
+        {mode === "signup" && (
+          <Input
+            placeholder="Your Name"
+            type="text"
+            value={name}
+            autoComplete="name"
+            onChange={e => setName(e.target.value)}
+            required
+            disabled={loading}
+          />
+        )}
         <Input
           placeholder="Password"
           type="password"
