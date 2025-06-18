@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, UserPlus, UserMinus, Users, Music } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import FollowersList from "@/components/FollowersList";
 import type { Database } from "@/integrations/supabase/types";
 
 type AudioStoryRow = Database["public"]["Tables"]["audio_stories"]["Row"];
@@ -256,6 +257,36 @@ export default function UserProfilePage() {
                   )}
                 </Button>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Followers and Following Section */}
+        <div className="bg-card p-6 rounded-xl shadow border border-primary/10 mb-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Users className="text-amber-400" size={24} />
+            <h2 className="text-2xl font-bold">Community</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-center">Followers</h3>
+              <FollowersList 
+                userId={userId!} 
+                currentUserId={currentUserId}
+                type="followers"
+                count={stats.followers_count}
+              />
+            </div>
+            
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-center">Following</h3>
+              <FollowersList 
+                userId={userId!} 
+                currentUserId={currentUserId}
+                type="following"
+                count={stats.following_count}
+              />
             </div>
           </div>
         </div>
