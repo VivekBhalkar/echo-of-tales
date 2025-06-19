@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 
 interface Track {
@@ -56,15 +55,38 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setDuration(audioRef.current.duration);
   };
 
-  // When track changes, reset progress/duration
+  // Handle track end - autoplay next track
+  const onTrackEnded = () => {
+    console.log('Track ended, attempting to play next track');
+    if (playlist.length > 1 && currentTrackIndex < playlist.length - 1) {
+      const nextIndex = currentTrackIndex + 1;
+      setCurrentTrackIndex(nextIndex);
+      setCurrentTrack(playlist[nextIndex]);
+      // Auto-play will be handled by the useEffect below
+    } else {
+      setIsPlaying(false);
+    }
+  };
+
+  // When track changes, reset progress/duration and auto-play if was playing
   useEffect(() => {
     setProgress(0);
     setDuration(0);
-    if (audioRef.current) {
+    if (audioRef.current && currentTrack) {
       audioRef.current.load();
-      setIsPlaying(false);
+      // Auto-play the new track if we were playing
+      if (isPlaying) {
+        audioRef.current.play().catch(console.error);
+      }
     }
   }, [currentTrack?.audioUrl]);
+
+  // Auto-play effect for seamless transitions
+  useEffect(() => {
+    if (audioRef.current && currentTrack && isPlaying) {
+      audioRef.current.play().catch(console.error);
+    }
+  }, [currentTrack, isPlaying]);
 
   const playTrack = (track: Track, newPlaylist?: Track[]) => {
     setCurrentTrack(track);
@@ -76,6 +98,7 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setPlaylistState([track]);
       setCurrentTrackIndex(0);
     }
+    setIsPlaying(true);
   };
 
   const togglePlayPause = () => {
@@ -83,7 +106,7 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (isPlaying) {
       audioRef.current.pause();
     } else {
-      audioRef.current.play();
+      audioRef.current.play().catch(console.error);
     }
     setIsPlaying(!isPlaying);
   };
@@ -93,6 +116,7 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const nextIndex = currentTrackIndex + 1;
     setCurrentTrackIndex(nextIndex);
     setCurrentTrack(playlist[nextIndex]);
+    // Keep playing state for seamless transition
   };
 
   const previousTrack = () => {
@@ -100,6 +124,7 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     const prevIndex = currentTrackIndex - 1;
     setCurrentTrackIndex(prevIndex);
     setCurrentTrack(playlist[prevIndex]);
+    // Keep playing state for seamless transition
   };
 
   const seekTo = (time: number) => {
@@ -143,7 +168,9 @@ export const AudioPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
           onLoadedMetadata={onLoadedMetadata}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
+          onEnded={onTrackEnded}
           className="hidden"
+          preload="metadata"
         />
       )}
     </AudioPlayerContext.Provider>

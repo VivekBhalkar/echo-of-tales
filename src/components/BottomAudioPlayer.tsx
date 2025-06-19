@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { Play, Pause, SkipForward, SkipBack } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, List } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export const BottomAudioPlayer: React.FC = () => {
   const {
@@ -17,6 +19,8 @@ export const BottomAudioPlayer: React.FC = () => {
     previousTrack,
     seekTo,
   } = useAudioPlayer();
+
+  const navigate = useNavigate();
 
   if (!currentTrack) return null;
 
@@ -52,6 +56,11 @@ export const BottomAudioPlayer: React.FC = () => {
             <p className="text-xs text-muted-foreground truncate">
               {currentTrack.artist}
             </p>
+            {playlist.length > 1 && (
+              <p className="text-xs text-muted-foreground">
+                {currentTrackIndex + 1} of {playlist.length}
+              </p>
+            )}
           </div>
         </div>
 
@@ -87,6 +96,16 @@ export const BottomAudioPlayer: React.FC = () => {
           >
             <SkipForward size={18} />
           </button>
+
+          {/* Playlist button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/playlists')}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <List size={18} />
+          </Button>
         </div>
 
         {/* Progress */}

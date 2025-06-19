@@ -14,6 +14,7 @@ import HomePage from "./pages/Home";
 import StoryPlayer from "./pages/StoryPlayer";
 import ProfilePage from "./pages/Profile";
 import UserProfilePage from "./pages/UserProfile";
+import PlaylistsPage from "./pages/Playlists";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/stories/:id" element={<StoryPlayer />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/profile/:userId" element={<UserProfilePage />} />
+            <Route path="/playlists" element={<PlaylistsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
