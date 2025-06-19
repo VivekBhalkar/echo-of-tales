@@ -59,10 +59,7 @@ export const PlaylistManager: React.FC = () => {
               title,
               audio_url,
               cover_image_url,
-              uploaded_by,
-              profiles!audio_stories_uploaded_by_fkey (
-                name
-              )
+              uploaded_by
             )
           )
         `)
@@ -70,6 +67,30 @@ export const PlaylistManager: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Get unique user IDs from the audio stories
+      const userIds = new Set<string>();
+      data?.forEach(playlist => {
+        playlist.playlist_items?.forEach(item => {
+          if (item.audio_stories?.uploaded_by) {
+            userIds.add(item.audio_stories.uploaded_by);
+          }
+        });
+      });
+
+      // Fetch profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .in('id', Array.from(userIds));
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of user ID to name
+      const userNameMap = new Map<string, string>();
+      profiles?.forEach(profile => {
+        userNameMap.set(profile.id, profile.name || 'Unknown Artist');
+      });
 
       // Transform data to include artist name from profiles
       const transformedData = data?.map(playlist => ({
@@ -80,7 +101,7 @@ export const PlaylistManager: React.FC = () => {
             ...item,
             audio_stories: {
               ...item.audio_stories,
-              artist: item.audio_stories.profiles?.name || 'Unknown Artist'
+              artist: userNameMap.get(item.audio_stories.uploaded_by) || 'Unknown Artist'
             }
           })) || []
       })) || [];
