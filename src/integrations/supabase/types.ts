@@ -39,6 +39,33 @@ export type Database = {
         }
         Relationships: []
       }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          expires_at: string
+          id: string
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       followers: {
         Row: {
           created_at: string
@@ -74,6 +101,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      listening_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          host_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          host_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          host_id?: string
+          id?: string
+        }
+        Relationships: []
       }
       playlist_items: {
         Row: {
@@ -159,11 +207,44 @@ export type Database = {
         }
         Relationships: []
       }
+      session_participants: {
+        Row: {
+          id: string
+          joined_at: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "listening_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_messages: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_user_stats: {
         Args: { user_id: string }
         Returns: {
