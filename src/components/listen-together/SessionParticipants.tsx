@@ -14,9 +14,9 @@ interface Participant {
   id: string;
   user_id: string;
   profiles: {
-    name: string;
+    name: string | null;
     avatar_url: string | null;
-  };
+  } | null;
 }
 
 interface SessionInfo {
@@ -79,20 +79,38 @@ export const SessionParticipants: React.FC<SessionParticipantsProps> = ({
 
   const loadParticipants = async () => {
     try {
-      const { data, error } = await supabase
+      // First get session participants
+      const { data: participantsData, error: participantsError } = await supabase
         .from('session_participants')
-        .select(`
-          id,
-          user_id,
-          profiles:user_id (
-            name,
-            avatar_url
-          )
-        `)
+        .select('id, user_id')
         .eq('session_id', sessionId);
 
-      if (error) throw error;
-      setParticipants(data || []);
+      if (participantsError) throw participantsError;
+
+      if (!participantsData || participantsData.length === 0) {
+        setParticipants([]);
+        return;
+      }
+
+      // Get user IDs to fetch profiles
+      const userIds = participantsData.map(p => p.user_id);
+
+      // Fetch profiles for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const participantsWithProfiles = participantsData.map(participant => ({
+        id: participant.id,
+        user_id: participant.user_id,
+        profiles: profilesData?.find(profile => profile.id === participant.user_id) || null
+      }));
+
+      setParticipants(participantsWithProfiles);
     } catch (error: any) {
       toast({
         title: 'Error loading participants',
