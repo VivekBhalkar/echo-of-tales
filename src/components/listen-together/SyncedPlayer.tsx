@@ -22,7 +22,7 @@ export const SyncedPlayer: React.FC<SyncedPlayerProps> = ({ sessionId, userId })
   const [sessionState, setSessionState] = useState<SessionState | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { playTrack, pauseTrack, currentTrack, isPlaying } = useAudioPlayer();
+  const { playTrack, togglePlayPause, currentTrack, isPlaying } = useAudioPlayer();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -147,8 +147,9 @@ export const SyncedPlayer: React.FC<SyncedPlayerProps> = ({ sessionId, userId })
     // Sync play/pause state
     if (state.is_playing && !isPlaying) {
       // Resume playback
+      togglePlayPause();
     } else if (!state.is_playing && isPlaying) {
-      pauseTrack();
+      togglePlayPause();
     }
   };
 
