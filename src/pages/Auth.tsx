@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -23,14 +22,14 @@ export default function AuthPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (ignore) return;
       if (session?.user) {
-        navigate("/stories");
+        navigate("/home");
       }
     });
 
     // On initial mount, check session as backup
     supabase.auth.getUser().then(({ data }) => {
       if (!ignore && data.user) {
-        navigate("/stories");
+        navigate("/home");
       }
     });
 
@@ -63,7 +62,7 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (!error) {
         toast({ title: "Signed in!" });
-        navigate("/stories");
+        navigate("/home");
       } else {
         toast({ title: "Login error", description: error.message, variant: "destructive" });
       }
@@ -76,7 +75,7 @@ export default function AuthPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/stories`
+        redirectTo: `${window.location.origin}/home`
       }
     });
     
