@@ -102,6 +102,54 @@ export type Database = {
           },
         ]
       }
+      friend_requests: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          id: string
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
       listening_sessions: {
         Row: {
           created_at: string
@@ -244,6 +292,14 @@ export type Database = {
       cleanup_expired_messages: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      get_user_friends: {
+        Args: { user_id: string }
+        Returns: {
+          friend_id: string
+          friend_name: string
+          friend_avatar_url: string
+        }[]
       }
       get_user_stats: {
         Args: { user_id: string }

@@ -16,6 +16,7 @@ import ProfilePage from "./pages/Profile";
 import UserProfilePage from "./pages/UserProfile";
 import PlaylistsPage from "./pages/Playlists";
 import ChatPage from "./pages/Chat";
+import FriendsPage from "./pages/Friends";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/profile/:userId" element={<UserProfilePage />} />
             <Route path="/playlists" element={<PlaylistsPage />} />
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/friends" element={<FriendsPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -4,16 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, UserPlus, UserMinus, Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { debounce } from "lodash"; // Auto-search functionality - 18-06-2025
+import { debounce } from "lodash";
+import FriendRequestButton from "@/components/FriendRequestButton";
+import { useFriendshipStatus } from "@/hooks/useFriendshipStatus";
 
 interface UserProfile {
   id: string;
   name: string | null;
   avatar_url: string | null;
-  isFollowing?: boolean;
   followers_count?: number;
   following_count?: number;
 }
@@ -26,15 +27,63 @@ function getInitials(name: string | null) {
   return parts[0][0].toUpperCase() + parts[parts.length - 1][0].toUpperCase();
 }
 
+function UserCard({ user, currentUserId }: { user: UserProfile; currentUserId: string }) {
+  const { status, refreshStatus } = useFriendshipStatus(currentUserId, user.id);
+  const navigate = useNavigate();
+
+  const handleViewProfile = (userId: string) => {
+    navigate(`/profile/${userId}`);
+  };
+
+  return (
+    <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <Avatar className="h-12 w-12">
+          {user.avatar_url ? (
+            <AvatarImage src={user.avatar_url} alt={user.name || "User"} />
+          ) : (
+            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+          )}
+        </Avatar>
+        
+        <div className="flex-1 min-w-0">
+          <button
+            onClick={() => handleViewProfile(user.id)}
+            className="text-left hover:underline"
+          >
+            <h3 className="font-medium text-amber-200 truncate">
+              {user.name || "Anonymous User"}
+            </h3>
+          </button>
+          <div className="flex items-center gap-4 text-xs text-amber-100/70 mt-1">
+            <span className="flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded">
+              <Users size={12} />
+              {user.followers_count || 0} followers
+            </span>
+            <span className="flex items-center gap-1 bg-orange-500/10 px-2 py-1 rounded">
+              {user.following_count || 0} following
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <FriendRequestButton
+        targetUserId={user.id}
+        currentUserId={currentUserId}
+        friendshipStatus={status}
+        onStatusChange={refreshStatus}
+      />
+    </div>
+  );
+}
+
 export default function UserSearch() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false); // Auto-suggestions visibility - 18-06-2025
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // Get current user
   useEffect(() => {
@@ -45,24 +94,7 @@ export default function UserSearch() {
     getCurrentUser();
   }, []);
 
-  // Load users that current user is following
-  useEffect(() => {
-    const loadFollowing = async () => {
-      if (!currentUserId) return;
-      
-      const { data } = await supabase
-        .from("followers")
-        .select("following_id")
-        .eq("follower_id", currentUserId);
-      
-      if (data) {
-        setFollowingUsers(new Set(data.map(f => f.following_id)));
-      }
-    };
-    loadFollowing();
-  }, [currentUserId]);
-
-  // Auto-search function with debouncing - 18-06-2025
+  // Auto-search function with debouncing
   const performAutoSearch = useCallback(
     debounce(async (query: string) => {
       if (!query.trim() || !currentUserId) {
@@ -76,13 +108,12 @@ export default function UserSearch() {
         const { data: profiles, error } = await supabase
           .from("profiles")
           .select("id, name, avatar_url")
-          .neq("id", currentUserId) // Exclude current user
+          .neq("id", currentUserId)
           .ilike("name", `%${query}%`)
-          .limit(5); // Limit suggestions to 5 users - 18-06-2025
+          .limit(5);
 
         if (error) throw error;
 
-        // Get follower stats for each user - 18-06-2025
         const usersWithStats = await Promise.all(
           (profiles || []).map(async (profile) => {
             const { data: stats } = await supabase
@@ -90,7 +121,6 @@ export default function UserSearch() {
             
             return {
               ...profile,
-              isFollowing: followingUsers.has(profile.id),
               followers_count: stats?.[0]?.followers_count || 0,
               following_count: stats?.[0]?.following_count || 0,
             };
@@ -98,7 +128,7 @@ export default function UserSearch() {
         );
 
         setSearchResults(usersWithStats);
-        setShowSuggestions(true); // Show auto-suggestions - 18-06-2025
+        setShowSuggestions(true);
       } catch (error: any) {
         console.error("Auto-search error:", error.message);
         setSearchResults([]);
@@ -106,11 +136,10 @@ export default function UserSearch() {
       } finally {
         setLoading(false);
       }
-    }, 300), // 300ms debounce delay - 18-06-2025
-    [currentUserId, followingUsers]
+    }, 300),
+    [currentUserId]
   );
 
-  // Handle search input change with auto-detection - 18-06-2025
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     if (value.trim()) {
@@ -125,18 +154,17 @@ export default function UserSearch() {
     if (!searchQuery.trim() || !currentUserId) return;
     
     setLoading(true);
-    setShowSuggestions(true); // Show results on manual search - 18-06-2025
+    setShowSuggestions(true);
     try {
       const { data: profiles, error } = await supabase
         .from("profiles")
         .select("id, name, avatar_url")
-        .neq("id", currentUserId) // Exclude current user
+        .neq("id", currentUserId)
         .ilike("name", `%${searchQuery}%`)
         .limit(10);
 
       if (error) throw error;
 
-      // Get follower stats for each user - Enhanced with proper follower counts - 18-06-2025
       const usersWithStats = await Promise.all(
         (profiles || []).map(async (profile) => {
           const { data: stats } = await supabase
@@ -144,7 +172,6 @@ export default function UserSearch() {
           
           return {
             ...profile,
-            isFollowing: followingUsers.has(profile.id),
             followers_count: stats?.[0]?.followers_count || 0,
             following_count: stats?.[0]?.following_count || 0,
           };
@@ -163,80 +190,6 @@ export default function UserSearch() {
     }
   };
 
-  const handleFollow = async (userId: string) => {
-    if (!currentUserId) return;
-
-    try {
-      const { error } = await supabase
-        .from("followers")
-        .insert({
-          follower_id: currentUserId,
-          following_id: userId,
-        });
-
-      if (error) throw error;
-
-      setFollowingUsers(prev => new Set([...prev, userId]));
-      setSearchResults(prev => 
-        prev.map(user => 
-          user.id === userId 
-            ? { ...user, isFollowing: true, followers_count: (user.followers_count || 0) + 1 }
-            : user
-        )
-      );
-
-      toast({ title: "Successfully followed user!" });
-    } catch (error: any) {
-      toast({
-        title: "Failed to follow user",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleUnfollow = async (userId: string) => {
-    if (!currentUserId) return;
-
-    try {
-      const { error } = await supabase
-        .from("followers")
-        .delete()
-        .eq("follower_id", currentUserId)
-        .eq("following_id", userId);
-
-      if (error) throw error;
-
-      setFollowingUsers(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(userId);
-        return newSet;
-      });
-      
-      setSearchResults(prev => 
-        prev.map(user => 
-          user.id === userId 
-            ? { ...user, isFollowing: false, followers_count: Math.max((user.followers_count || 1) - 1, 0) }
-            : user
-        )
-      );
-
-      toast({ title: "Successfully unfollowed user!" });
-    } catch (error: any) {
-      toast({
-        title: "Failed to unfollow user",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleViewProfile = (userId: string) => {
-    navigate(`/profile/${userId}`);
-    setShowSuggestions(false); // Hide suggestions when navigating - 18-06-2025
-  };
-
-  // Hide suggestions when clicking outside - 18-06-2025
   const handleInputBlur = () => {
     setTimeout(() => setShowSuggestions(false), 200);
   };
@@ -247,6 +200,14 @@ export default function UserSearch() {
     }
   };
 
+  if (!currentUserId) {
+    return (
+      <div className="text-center text-muted-foreground py-12">
+        <p>Please log in to search for users</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4 relative">
       <div className="flex items-center gap-3 mb-4">
@@ -254,7 +215,6 @@ export default function UserSearch() {
         <h2 className="text-xl font-bold text-amber-200">Find Users</h2>
       </div>
       
-      {/* Enhanced search input with auto-detection - 18-06-2025 */}
       <div className="relative">
         <div className="flex gap-2">
           <Input
@@ -271,7 +231,7 @@ export default function UserSearch() {
           </Button>
         </div>
 
-        {/* Auto-suggestions dropdown - 18-06-2025 */}
+        {/* Auto-suggestions dropdown */}
         {showSuggestions && searchResults.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-amber-500/20 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
             <div className="p-2">
@@ -280,56 +240,11 @@ export default function UserSearch() {
               </div>
               <div className="space-y-2">
                 {searchResults.map((user) => (
-                  <div
+                  <UserCard
                     key={user.id}
-                    className="flex items-center justify-between p-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300 cursor-pointer"
-                    onClick={() => handleViewProfile(user.id)}
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <Avatar className="h-10 w-10">
-                        {user.avatar_url ? (
-                          <AvatarImage src={user.avatar_url} alt={user.name || "User"} />
-                        ) : (
-                          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                        )}
-                      </Avatar>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-amber-200 truncate text-sm">
-                          {user.name || "Anonymous User"}
-                        </h3>
-                        <div className="flex items-center gap-3 text-xs text-amber-100/70">
-                          <span className="flex items-center gap-1">
-                            <Users size={10} />
-                            {user.followers_count} followers
-                          </span>
-                          <span>{user.following_count} following</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant={user.isFollowing ? "destructive" : "default"}
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        user.isFollowing ? handleUnfollow(user.id) : handleFollow(user.id);
-                      }}
-                      className="ml-2 text-xs px-3 py-1"
-                    >
-                      {user.isFollowing ? (
-                        <>
-                          <UserMinus size={12} className="mr-1" />
-                          Unfollow
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus size={12} className="mr-1" />
-                          Follow
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                    user={user}
+                    currentUserId={currentUserId}
+                  />
                 ))}
               </div>
             </div>
@@ -337,72 +252,23 @@ export default function UserSearch() {
         )}
       </div>
 
-      {/* Full search results - Enhanced with better follower display - 18-06-2025 */}
+      {/* Full search results */}
       {!showSuggestions && searchQuery && searchResults.length > 0 && (
         <div className="space-y-3">
           <div className="text-sm text-amber-300/70 mb-3">
             Found {searchResults.length} users matching "{searchQuery}"
           </div>
           {searchResults.map((user) => (
-            <div
+            <UserCard
               key={user.id}
-              className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300"
-            >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Avatar className="h-12 w-12">
-                  {user.avatar_url ? (
-                    <AvatarImage src={user.avatar_url} alt={user.name || "User"} />
-                  ) : (
-                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                  )}
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <button
-                    onClick={() => handleViewProfile(user.id)}
-                    className="text-left hover:underline"
-                  >
-                    <h3 className="font-medium text-amber-200 truncate">
-                      {user.name || "Anonymous User"}
-                    </h3>
-                  </button>
-                  {/* Enhanced follower count display - 18-06-2025 */}
-                  <div className="flex items-center gap-4 text-xs text-amber-100/70 mt-1">
-                    <span className="flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded">
-                      <Users size={12} />
-                      {user.followers_count} followers
-                    </span>
-                    <span className="flex items-center gap-1 bg-orange-500/10 px-2 py-1 rounded">
-                      {user.following_count} following
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                variant={user.isFollowing ? "destructive" : "default"}
-                size="sm"
-                onClick={() => user.isFollowing ? handleUnfollow(user.id) : handleFollow(user.id)}
-                className="ml-2"
-              >
-                {user.isFollowing ? (
-                  <>
-                    <UserMinus size={16} className="mr-1" />
-                    Unfollow
-                  </>
-                ) : (
-                  <>
-                    <UserPlus size={16} className="mr-1" />
-                    Follow
-                  </>
-                )}
-              </Button>
-            </div>
+              user={user}
+              currentUserId={currentUserId}
+            />
           ))}
         </div>
       )}
 
-      {/* No results message - Enhanced - 18-06-2025 */}
+      {/* No results message */}
       {!showSuggestions && searchQuery && searchResults.length === 0 && !loading && (
         <div className="text-center py-8 text-amber-300/70">
           <Search size={48} className="mx-auto mb-4 opacity-50" />
