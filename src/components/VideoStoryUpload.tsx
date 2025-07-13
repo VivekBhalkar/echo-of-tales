@@ -25,7 +25,12 @@ async function uploadWallpaperImage(userId: string, file: File): Promise<string 
     .from("video-wallpapers")
     .upload(filePath, file);
   if (error) throw new Error(error.message);
-  return `https://pxnwcbxhqwsuoqmvcsph.supabase.co/storage/v1/object/public/video-wallpapers/${filePath}`;
+  
+  const { data: publicUrl } = supabase.storage
+    .from("video-wallpapers")
+    .getPublicUrl(filePath);
+  
+  return publicUrl.publicUrl;
 }
 
 // Helper to upload video file to Supabase Storage
@@ -37,7 +42,12 @@ async function uploadVideoFile(userId: string, file: File): Promise<string | nul
     .from("story-videos")
     .upload(filePath, file);
   if (error) throw new Error(error.message);
-  return `https://pxnwcbxhqwsuoqmvcsph.supabase.co/storage/v1/object/public/story-videos/${filePath}`;
+  
+  const { data: publicUrl } = supabase.storage
+    .from("story-videos")
+    .getPublicUrl(filePath);
+  
+  return publicUrl.publicUrl;
 }
 
 export default function VideoStoryUpload({ onUpload }: Props) {
